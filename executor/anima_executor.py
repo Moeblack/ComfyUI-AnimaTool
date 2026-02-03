@@ -180,13 +180,14 @@ class AnimaExecutor:
     def _inject(self, prompt_json: Dict[str, Any]) -> Dict[str, Any]:
         wf = deepcopy(self._workflow_template)
 
-        # 模型文件（可选覆盖）
-        if prompt_json.get("clip_name"):
-            wf["45"]["inputs"]["clip_name"] = str(prompt_json["clip_name"])
-        if prompt_json.get("unet_name"):
-            wf["44"]["inputs"]["unet_name"] = str(prompt_json["unet_name"])
-        if prompt_json.get("vae_name"):
-            wf["15"]["inputs"]["vae_name"] = str(prompt_json["vae_name"])
+        # 模型文件：优先使用参数指定，其次使用配置，最后使用模板默认值
+        clip_name = prompt_json.get("clip_name") or self.config.clip_name
+        unet_name = prompt_json.get("unet_name") or self.config.unet_name
+        vae_name = prompt_json.get("vae_name") or self.config.vae_name
+        
+        wf["45"]["inputs"]["clip_name"] = str(clip_name)
+        wf["44"]["inputs"]["unet_name"] = str(unet_name)
+        wf["15"]["inputs"]["vae_name"] = str(vae_name)
 
         # 文本
         positive = (prompt_json.get("positive") or "").strip()
@@ -377,6 +378,25 @@ class AnimaExecutor:
             ".gif": "image/gif",
         }.get(ext, "image/png")
 
+    def check_models(self) -> Tuple[bool, str]:
+        """
+        检查模型文件是否存在（如果配置了 COMFYUI_MODELS_DIR）。
+        返回 (is_ok, message)
+        """
+        if not self.config.check_models or not self.config.comfyui_models_dir:
+            return True, "模型检查已跳过（未配置 COMFYUI_MODELS_DIR）"
+        
+        all_exist, missing = self.config.check_models_exist()
+        if all_exist:
+            return True, "所有模型文件已就绪"
+        
+        missing_str = "\n".join(f"  - {m}" for m in missing)
+        return False, (
+            f"缺少以下模型文件：\n{missing_str}\n\n"
+            f"请从 HuggingFace 下载：https://huggingface.co/circlestone-labs/Anima\n"
+            f"并放置到 ComfyUI/models/ 对应子目录"
+        )
+
     def generate(self, prompt_json: Dict[str, Any]) -> Dict[str, Any]:
         """
         输入结构化 JSON，执行生成。
@@ -387,6 +407,11 @@ class AnimaExecutor:
         - width / height
         - images: [{filename, url, file_path, base64, mime_type, markdown}]
         """
+        # 预检查：模型文件
+        models_ok, models_msg = self.check_models()
+        if not models_ok:
+            raise RuntimeError(models_msg)
+        
         prompt = self._inject(prompt_json)
         prompt_id = self.queue_prompt(prompt)
         history_item = self.wait_history(prompt_id)

@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List, Tuple
 
 
 def _get_env_bool(key: str, default: bool) -> bool:
@@ -36,6 +36,12 @@ def _get_env_int(key: str, default: int) -> int:
         except ValueError:
             pass
     return default
+
+
+# 默认模型文件名
+DEFAULT_UNET_NAME = "anima-preview.safetensors"
+DEFAULT_CLIP_NAME = "qwen_3_06b_base.safetensors"
+DEFAULT_VAE_NAME = "qwen_image_vae.safetensors"
 
 
 @dataclass
@@ -107,3 +113,61 @@ class AnimaToolConfig:
     round_to: int = field(
         default_factory=lambda: _get_env_int("ANIMATOOL_ROUND_TO", 16)
     )
+
+    # -------------------------
+    # 模型配置
+    # -------------------------
+    # ComfyUI models 根目录（用于模型预检查）
+    # 如果不设置，则跳过预检查（远程 ComfyUI 场景）
+    comfyui_models_dir: Optional[Path] = field(
+        default_factory=lambda: Path(os.environ["COMFYUI_MODELS_DIR"]) if os.environ.get("COMFYUI_MODELS_DIR") else None
+    )
+
+    # 模型文件名（可通过环境变量或参数覆盖）
+    unet_name: str = field(
+        default_factory=lambda: os.environ.get("ANIMATOOL_UNET_NAME", DEFAULT_UNET_NAME)
+    )
+    clip_name: str = field(
+        default_factory=lambda: os.environ.get("ANIMATOOL_CLIP_NAME", DEFAULT_CLIP_NAME)
+    )
+    vae_name: str = field(
+        default_factory=lambda: os.environ.get("ANIMATOOL_VAE_NAME", DEFAULT_VAE_NAME)
+    )
+
+    # 是否启用模型预检查（默认启用，但需要设置 COMFYUI_MODELS_DIR）
+    check_models: bool = field(
+        default_factory=lambda: _get_env_bool("ANIMATOOL_CHECK_MODELS", True)
+    )
+
+    def get_model_paths(self) -> dict:
+        """
+        返回模型文件的预期路径（相对于 ComfyUI models 目录）。
+        """
+        return {
+            "unet": ("diffusion_models", self.unet_name),
+            "clip": ("text_encoders", self.clip_name),
+            "vae": ("vae", self.vae_name),
+        }
+
+    def check_models_exist(self) -> Tuple[bool, List[str]]:
+        """
+        检查模型文件是否存在。
+        
+        Returns:
+            (all_exist, missing_files): 是否全部存在，缺失的文件列表
+        """
+        if not self.comfyui_models_dir:
+            # 未配置 models 目录，跳过检查
+            return True, []
+        
+        models_dir = Path(self.comfyui_models_dir)
+        if not models_dir.exists():
+            return False, [f"ComfyUI models 目录不存在: {models_dir}"]
+        
+        missing = []
+        for model_type, (subdir, filename) in self.get_model_paths().items():
+            model_path = models_dir / subdir / filename
+            if not model_path.exists():
+                missing.append(f"{model_type}: {subdir}/{filename}")
+        
+        return len(missing) == 0, missing

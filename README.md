@@ -228,6 +228,8 @@ ComfyUI-AnimaTool/
 
 所有配置都可以通过环境变量覆盖，无需修改代码：
 
+#### 基础配置
+
 | 环境变量 | 默认值 | 说明 |
 |----------|--------|------|
 | `COMFYUI_URL` | `http://127.0.0.1:8188` | ComfyUI 服务地址 |
@@ -236,6 +238,16 @@ ComfyUI-AnimaTool/
 | `ANIMATOOL_OUTPUT_DIR` | `./outputs` | 图片输出目录 |
 | `ANIMATOOL_TARGET_MP` | `1.0` | 目标像素数（MP） |
 | `ANIMATOOL_ROUND_TO` | `16` | 分辨率对齐倍数 |
+
+#### 模型配置
+
+| 环境变量 | 默认值 | 说明 |
+|----------|--------|------|
+| `COMFYUI_MODELS_DIR` | *(未设置)* | ComfyUI models 目录路径，用于模型预检查 |
+| `ANIMATOOL_UNET_NAME` | `anima-preview.safetensors` | UNET 模型文件名 |
+| `ANIMATOOL_CLIP_NAME` | `qwen_3_06b_base.safetensors` | CLIP 模型文件名 |
+| `ANIMATOOL_VAE_NAME` | `qwen_image_vae.safetensors` | VAE 模型文件名 |
+| `ANIMATOOL_CHECK_MODELS` | `true` | 是否启用模型预检查 |
 
 ### 在 Cursor MCP 配置中设置环境变量
 
@@ -246,12 +258,36 @@ ComfyUI-AnimaTool/
       "command": "C:\\ComfyUI\\.venv\\Scripts\\python.exe",
       "args": ["C:\\ComfyUI\\custom_nodes\\ComfyUI-AnimaTool\\servers\\mcp_server.py"],
       "env": {
-        "COMFYUI_URL": "http://192.168.1.100:8188"
+        "COMFYUI_URL": "http://127.0.0.1:8188",
+        "COMFYUI_MODELS_DIR": "C:\\ComfyUI\\models"
       }
     }
   }
 }
 ```
+
+### 模型预检查
+
+设置 `COMFYUI_MODELS_DIR` 后，生成前会自动检查模型文件是否存在：
+
+```json
+"env": {
+  "COMFYUI_MODELS_DIR": "C:\\ComfyUI\\models"
+}
+```
+
+如果缺少模型文件，会给出友好提示：
+
+```
+缺少以下模型文件：
+  - unet: diffusion_models/anima-preview.safetensors
+  - clip: text_encoders/qwen_3_06b_base.safetensors
+
+请从 HuggingFace 下载：https://huggingface.co/circlestone-labs/Anima
+并放置到 ComfyUI/models/ 对应子目录
+```
+
+**远程 ComfyUI 场景**：如果不设置 `COMFYUI_MODELS_DIR`，则跳过预检查（因为无法访问远程文件系统）。
 
 ### 远程/Docker ComfyUI 配置
 
