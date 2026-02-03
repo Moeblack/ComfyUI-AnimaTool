@@ -105,7 +105,7 @@ async def list_tools() -> list[Tool]:
     return [
         Tool(
             name="generate_anima_image",
-            description="使用 Anima 模型生成二次元/插画图片。画师必须以 @ 开头（如 @fkey, @jima）。必须明确安全标签（safe/sensitive/nsfw/explicit）。",
+            description="使用 Anima 模型生成二次元/插画图片。画师必须以 @ 开头（如 @fkey）。必须明确安全标签（safe/sensitive/nsfw/explicit）。支持并行调用：生成多张图时可同时发起多个请求，无需串行等待。",
             inputSchema=TOOL_SCHEMA,
         )
     ]

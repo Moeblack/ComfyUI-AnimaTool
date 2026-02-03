@@ -1,6 +1,6 @@
 {
   "name": "generate_anima_image",
-  "description": "使用 Anima（circlestone-labs/Anima）在本地 ComfyUI 生成二次元/插画向图片。调用方应先按 Anima 规范生成结构化字段（顺序：[质量/元数据/年份/安全] [人数] [角色] [作品] [画师] [通用标签]），并保证安全标签明确（safe/sensitive/nsfw/explicit）。",
+  "description": "使用 Anima（circlestone-labs/Anima）在本地 ComfyUI 生成二次元/插画向图片。调用方应先按 Anima 规范生成结构化字段（顺序：[质量/元数据/年份/安全] [人数] [角色] [作品] [画师] [通用标签]），并保证安全标签明确（safe/sensitive/nsfw/explicit）。支持并行调用：生成多张图时可同时发起多个请求，无需串行等待。",
   "parameters": {
     "type": "object",
     "properties": {
