@@ -39,11 +39,14 @@ def estimate_size_from_ratio(
     *,
     aspect_ratio: str,
     target_megapixels: float = 1.0,
-    round_to: int = 8,
+    round_to: int = 16,
 ) -> Tuple[int, int]:
     """
     只给定长宽比时，估算 width/height，使像素数接近 target_megapixels。
-    宽高会向上取整到 round_to 的倍数（默认 8）。
+    宽高会向上取整到 round_to 的倍数。
+    
+    注意：Anima 基于 Cosmos 架构，VAE 缩放 8 倍后还需被 spatial_patch_size=2 整除，
+    所以 round_to 必须至少是 16（8×2），否则会报错 "should be divisible by spatial_patch_size"。
     """
     r = _parse_aspect_ratio(aspect_ratio)
     target_px = max(1.0, float(target_megapixels)) * 1_000_000.0
@@ -52,6 +55,14 @@ def estimate_size_from_ratio(
     w = _round_up(max(64, w), round_to)
     h = _round_up(max(64, h), round_to)
     return w, h
+
+
+def align_dimension(value: int, round_to: int = 16) -> int:
+    """
+    将尺寸对齐到 round_to 的倍数（向上取整）。
+    用于处理用户直接传入的 width/height。
+    """
+    return _round_up(max(64, int(value)), round_to)
 
 
 def _join_csv(*parts: str) -> str:
@@ -190,17 +201,24 @@ class AnimaExecutor:
         width = prompt_json.get("width")
         height = prompt_json.get("height")
         aspect_ratio = (prompt_json.get("aspect_ratio") or "").strip()
+        round_to = int(prompt_json.get("round_to") or self.config.round_to)
 
         if (width is None or height is None) and aspect_ratio:
+            # 仅提供 aspect_ratio 时自动计算
             w, h = estimate_size_from_ratio(
                 aspect_ratio=aspect_ratio,
                 target_megapixels=float(prompt_json.get("target_megapixels") or self.config.target_megapixels),
-                round_to=int(prompt_json.get("round_to") or self.config.round_to),
+                round_to=round_to,
             )
             width, height = w, h
+        elif width is not None and height is not None:
+            # 用户直接指定了 width/height，也需要对齐到 round_to 的倍数
+            # 避免 "should be divisible by spatial_patch_size" 错误
+            width = align_dimension(width, round_to)
+            height = align_dimension(height, round_to)
 
         if width is None or height is None:
-            # 默认方形 1MP
+            # 默认方形 1MP（1024 是 16 的倍数）
             width, height = 1024, 1024
 
         wf["28"]["inputs"]["width"] = int(width)

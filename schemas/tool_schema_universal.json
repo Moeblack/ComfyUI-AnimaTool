@@ -36,19 +36,19 @@
       },
       "width": {
         "type": "integer",
-        "description": "宽度。建议约 1MP（如 1024/896/1152 等），并尽量为 8 的倍数。若提供 width/height 则优先使用它们。",
+        "description": "宽度（像素）。必须是 16 的倍数（如 512/768/1024/1152 等），否则会自动向上对齐。建议 width×height 约 1MP。若提供 width/height 则优先使用它们。",
         "minimum": 64
       },
       "height": {
         "type": "integer",
-        "description": "高度。建议约 1MP，并尽量为 8 的倍数。若提供 width/height 则优先使用它们。",
+        "description": "高度（像素）。必须是 16 的倍数（如 512/768/1024/1152 等），否则会自动向上对齐。建议 width×height 约 1MP。若提供 width/height 则优先使用它们。",
         "minimum": 64
       },
       "round_to": {
         "type": "integer",
-        "description": "当从比例推算宽高时，宽高向上取整到该值的倍数（默认 8）。",
-        "default": 8,
-        "minimum": 1
+        "description": "宽高对齐倍数。Anima 基于 Cosmos 架构，VAE 缩放 8 倍后需被 spatial_patch_size=2 整除，所以默认 16。不建议改小。",
+        "default": 16,
+        "minimum": 16
       },
       "batch_size": {
         "type": "integer",

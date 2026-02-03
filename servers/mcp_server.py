@@ -61,8 +61,8 @@ TOOL_SCHEMA = {
             "description": "长宽比，如 '16:9'、'9:16'、'1:1'",
             "enum": ["21:9", "2:1", "16:9", "16:10", "5:3", "3:2", "4:3", "1:1", "3:4", "2:3", "3:5", "10:16", "9:16", "1:2", "9:21"]
         },
-        "width": {"type": "integer", "description": "宽度（可选，会覆盖 aspect_ratio）"},
-        "height": {"type": "integer", "description": "高度（可选，会覆盖 aspect_ratio）"},
+        "width": {"type": "integer", "description": "宽度（像素），必须是 16 的倍数如 512/768/1024，否则自动对齐。会覆盖 aspect_ratio"},
+        "height": {"type": "integer", "description": "高度（像素），必须是 16 的倍数如 512/768/1024，否则自动对齐。会覆盖 aspect_ratio"},
         "quality_meta_year_safe": {
             "type": "string",
             "description": "质量/年份/安全标签。必须包含 safe/sensitive/nsfw/explicit 之一"

@@ -26,4 +26,7 @@ class AnimaToolConfig:
 
     # 分辨率生成：当只给 aspect_ratio 时，按目标像素数估算宽高
     target_megapixels: float = 1.0
-    round_to: int = 8  # 宽高向上取整到 round_to 的倍数（8 兼容性最好）
+    # 宽高向上取整到 round_to 的倍数
+    # 注意：Anima 基于 Cosmos 架构，VAE 缩放 8 倍后还需被 spatial_patch_size=2 整除
+    # 所以必须是 8×2=16 的倍数，否则会报错 "should be divisible by spatial_patch_size"
+    round_to: int = 16
