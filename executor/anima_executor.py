@@ -80,7 +80,9 @@ def _join_csv(*parts: str) -> str:
 def build_anima_positive_text(prompt_json: Dict[str, Any]) -> str:
     """
     按 Anima 推荐顺序拼接正面提示词（全部逗号连接，不分行）。
-    顺序：[质量/安全/年份] [人数] [角色] [作品] [画师] [风格] [外观] [标签] [自然语言] [环境]
+    顺序：[质量/安全/年份] [人数] [角色] [作品] [画师] [风格] [外观] [标签] [环境] [自然语言]
+    
+    说明：nltags（自然语言补充）放在最后，因为它是"实在没法用 tag 才写"的兜底描述。
     """
     return _join_csv(
         prompt_json.get("quality_meta_year_safe", ""),
@@ -91,8 +93,8 @@ def build_anima_positive_text(prompt_json: Dict[str, Any]) -> str:
         prompt_json.get("style", ""),
         prompt_json.get("appearance", ""),
         prompt_json.get("tags", ""),
-        prompt_json.get("nltags", ""),
         prompt_json.get("environment", ""),
+        prompt_json.get("nltags", ""),
     )
 
 
