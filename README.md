@@ -4,6 +4,11 @@
 
 ![Screenshot](assets/screenshot.webp)
 
+## Documentation
+
+- [📖 Wiki & Prompt Guide](https://github.com/Moeblack/ComfyUI-AnimaTool/wiki) - 详细的提示词指南、安装教程和 API 文档。
+- [🤖 Cursor Skill](CURSOR_SKILL.md) - **Cursor / Windsurf 用户必读**！将此文件内容作为 Agent Skill，让 AI 学会如何写高质量提示词。
+
 ## Features
 
 - **MCP Server**：图片原生显示在 Cursor/Claude 聊天窗口

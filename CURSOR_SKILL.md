@@ -6,7 +6,7 @@
 
 - 用户要求生成二次元/动漫/插画风格图片
 - 用户提到 Anima 模型
-- 用户要求使用特定画师风格（如 @fkey, @jima）
+- 用户要求使用特定画师风格（如 @fkey, @jima, @wlop）
 
 ## 使用方法
 
@@ -27,7 +27,7 @@
 | `count` | 人数 | `"1girl"`, `"2girls"`, `"1boy"` |
 | `artist` | 画师（带@） | `"@fkey, @jima"` |
 | `tags` | 核心标签 | `"upper body, smile, white dress"` |
-| `neg` | 负面提示词 | `"worst quality, low quality, blurry, bad hands, nsfw"` |
+| `neg` | 负面提示词 | `"worst quality, low quality, blurry, text, watermark, signature, username, nsfw"` |
 
 ## 常用可选参数
 
@@ -37,6 +37,7 @@
 | `character` | 角色名 | `"hatsune miku"` |
 | `series` | 作品名 | `"vocaloid"` |
 | `appearance` | 外观 | `"long hair, blue eyes"` |
+| `style` | 画风（默认留空，只有需要锁定品类时才填） | `"splash art"`, `"watercolor"` |
 | `environment` | 环境/光影 | `"sunset, backlight"` |
 | `steps` | 步数 | `25`（默认） |
 | `seed` | 种子 | 不填则随机 |
@@ -61,7 +62,7 @@
   "artist": "@fkey, @jima",
   "tags": "upper body, smile, white dress, garden, flowers, sunlight",
   "environment": "outdoor, natural lighting, bokeh",
-  "neg": "worst quality, low quality, blurry, bad hands, bad anatomy, extra fingers, missing fingers, text, watermark, nsfw, explicit"
+  "neg": "worst quality, low quality, blurry, bad hands, bad anatomy, extra fingers, missing fingers, text, watermark, signature, username, artist name, nsfw, explicit"
 }
 ```
 
@@ -72,8 +73,15 @@
 - **手脚易崩**：负面词加 `bad hands, extra fingers, missing fingers, bad feet`
 - **兽耳娘防变异**：负面加 `anthro`
 - **反咒量大管饱**：负面词要细分，不要只写 `bad anatomy`
+- **画师名能用时，`style` 留空**
+- **`style` 只在需要锁品类/媒介时才写**（如 `league of legends splash art` / `watercolor` / `pixel art`）
+- **不要同时写互斥的风格词**（如 `storybook illustration` 和 `splash art` 不能同时出现）
+- **`tags`/`environment` 里不要塞会改变整体风格的词**（如 `chibi` / `lineart` / `flat shading`），除非你就是要那个效果
 
 ## 前置条件
 
-- ComfyUI 运行在 `http://127.0.0.1:8188`
-- Anima 模型文件已放置
+- ComfyUI 需要运行在 `http://127.0.0.1:8188`
+- Anima 模型文件需要已放置：
+  - `anima-preview.safetensors`
+  - `qwen_3_06b_base.safetensors`
+  - `qwen_image_vae.safetensors`
