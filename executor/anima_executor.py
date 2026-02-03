@@ -243,14 +243,58 @@ class AnimaExecutor:
         return wf
 
     # -------------------------
+    # Health check
+    # -------------------------
+    def check_comfyui_health(self) -> Tuple[bool, str]:
+        """
+        检查 ComfyUI 是否可访问。
+        返回 (is_healthy, message)
+        """
+        try:
+            url = urljoin(self.config.comfyui_url.rstrip("/") + "/", "system_stats")
+            self._http_get_json(url)
+            return True, f"ComfyUI 运行正常 ({self.config.comfyui_url})"
+        except Exception as e:
+            error_msg = str(e)
+            # 提供友好的错误提示
+            if "Connection refused" in error_msg or "连接" in error_msg:
+                return False, (
+                    f"无法连接到 ComfyUI ({self.config.comfyui_url})\n"
+                    f"请确认：\n"
+                    f"  1. ComfyUI 已启动\n"
+                    f"  2. 地址和端口正确（可通过 COMFYUI_URL 环境变量修改）\n"
+                    f"  3. 防火墙未阻止连接"
+                )
+            elif "timeout" in error_msg.lower() or "超时" in error_msg:
+                return False, (
+                    f"连接 ComfyUI 超时 ({self.config.comfyui_url})\n"
+                    f"可能原因：网络延迟、ComfyUI 负载过高"
+                )
+            else:
+                return False, f"ComfyUI 连接错误: {error_msg}"
+
+    # -------------------------
     # ComfyUI execution
     # -------------------------
     def queue_prompt(self, prompt: Dict[str, Any]) -> str:
         url = urljoin(self.config.comfyui_url.rstrip("/") + "/", "prompt")
         payload = {"prompt": prompt, "client_id": self._client_id}
-        resp = self._http_post_json(url, payload)
+        
+        try:
+            resp = self._http_post_json(url, payload)
+        except Exception as e:
+            # 先检查 ComfyUI 是否可访问
+            is_healthy, health_msg = self.check_comfyui_health()
+            if not is_healthy:
+                raise RuntimeError(health_msg) from e
+            raise
+        
         prompt_id = str(resp.get("prompt_id") or "")
         if not prompt_id:
+            # 检查是否有错误信息
+            error = resp.get("error") or resp.get("node_errors")
+            if error:
+                raise RuntimeError(f"ComfyUI 执行错误：{error}")
             raise RuntimeError(f"ComfyUI /prompt 返回异常：{resp}")
         return prompt_id
 

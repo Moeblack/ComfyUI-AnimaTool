@@ -222,24 +222,128 @@ ComfyUI-AnimaTool/
 
 ---
 
+## Configuration
+
+### 环境变量（推荐）
+
+所有配置都可以通过环境变量覆盖，无需修改代码：
+
+| 环境变量 | 默认值 | 说明 |
+|----------|--------|------|
+| `COMFYUI_URL` | `http://127.0.0.1:8188` | ComfyUI 服务地址 |
+| `ANIMATOOL_TIMEOUT` | `600` | 生成超时（秒） |
+| `ANIMATOOL_DOWNLOAD_IMAGES` | `true` | 是否保存图片到本地 |
+| `ANIMATOOL_OUTPUT_DIR` | `./outputs` | 图片输出目录 |
+| `ANIMATOOL_TARGET_MP` | `1.0` | 目标像素数（MP） |
+| `ANIMATOOL_ROUND_TO` | `16` | 分辨率对齐倍数 |
+
+### 在 Cursor MCP 配置中设置环境变量
+
+```json
+{
+  "mcpServers": {
+    "anima-tool": {
+      "command": "C:\\ComfyUI\\.venv\\Scripts\\python.exe",
+      "args": ["C:\\ComfyUI\\custom_nodes\\ComfyUI-AnimaTool\\servers\\mcp_server.py"],
+      "env": {
+        "COMFYUI_URL": "http://192.168.1.100:8188"
+      }
+    }
+  }
+}
+```
+
+### 远程/Docker ComfyUI 配置
+
+如果 ComfyUI 不在本机运行：
+
+**局域网其他电脑**：
+```bash
+export COMFYUI_URL=http://192.168.1.100:8188
+```
+
+**Docker 容器访问宿主机**：
+```bash
+export COMFYUI_URL=http://host.docker.internal:8188
+```
+
+**WSL 访问 Windows**：
+```bash
+export COMFYUI_URL=http://$(cat /etc/resolv.conf | grep nameserver | awk '{print $2}'):8188
+```
+
+---
+
 ## Troubleshooting
+
+### 错误：无法连接到 ComfyUI
+
+**症状**：`Connection refused` 或 `无法连接到 ComfyUI`
+
+**排查步骤**：
+1. 确认 ComfyUI 已启动：浏览器访问 `http://127.0.0.1:8188`
+2. 确认端口正确：默认 8188，如果改过需要设置 `COMFYUI_URL`
+3. 确认防火墙未阻止（Windows Defender / 企业防火墙）
+4. 如果 ComfyUI 在远程/Docker，设置正确的 `COMFYUI_URL`
+
+### 错误：H,W should be divisible by spatial_patch_size
+
+**症状**：`H,W (xxx, xxx) should be divisible by spatial_patch_size 2`
+
+**原因**：分辨率不是 16 的倍数
+
+**解决**：
+- 使用预设的 `aspect_ratio`（如 `16:9`、`9:16`、`1:1`）
+- 如果手动指定 `width`/`height`，确保是 16 的倍数（如 512、768、1024）
+
+### 错误：模型文件不存在
+
+**症状**：ComfyUI 控制台报 `FileNotFoundError` 或 `Model not found`
+
+**解决**：确认以下文件存在：
+
+| 文件 | 位置 |
+|------|------|
+| `anima-preview.safetensors` | `ComfyUI/models/diffusion_models/` |
+| `qwen_3_06b_base.safetensors` | `ComfyUI/models/text_encoders/` |
+| `qwen_image_vae.safetensors` | `ComfyUI/models/vae/` |
+
+下载地址：[circlestone-labs/Anima](https://huggingface.co/circlestone-labs/Anima)
 
 ### MCP Server 没加载？
 
-1. 检查 Cursor Settings → MCP → anima-tool 状态
-2. 查看输出日志（点击 "Show Output"）
-3. 确认 Python 路径正确
-4. 确认已安装 `mcp` 库
+1. **检查状态**：Cursor Settings → MCP → anima-tool 应显示绿色
+2. **查看日志**：点击 "Show Output" 查看错误
+3. **确认路径**：Python 和脚本路径必须是**绝对路径**
+4. **确认依赖**：`pip install mcp`（使用 ComfyUI 的 Python 环境）
+5. **重启 Cursor**：修改配置后必须重启
 
-### 生成失败？
+### 生成超时？
 
-1. 确认 ComfyUI 正在运行（`http://127.0.0.1:8188`）
-2. 确认 Anima 模型文件存在
-3. 检查 ComfyUI 控制台的错误信息
+**症状**：等待很久后报 `TimeoutError`
+
+**可能原因**：
+- ComfyUI 正在加载模型（首次生成较慢）
+- GPU 显存不足导致处理缓慢
+- 步数 `steps` 设置过高
+
+**解决**：
+- 增加超时时间：`export ANIMATOOL_TIMEOUT=1200`
+- 降低步数：`steps: 25`（默认值）
+- 检查 ComfyUI 控制台是否有错误
 
 ### API 调用卡住？
 
 确保使用的是最新版本，旧版本可能存在事件循环阻塞问题。
+
+---
+
+## System Requirements
+
+- **Python**: 3.10+
+- **ComfyUI**: 最新版本
+- **GPU**: 推荐 8GB+ 显存（Anima 模型较大）
+- **依赖**：`mcp`（MCP Server）、`requests`（可选，HTTP 请求）
 
 ---
 

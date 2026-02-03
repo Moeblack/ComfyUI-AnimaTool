@@ -1,32 +1,109 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+import os
+from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Optional
 
 
-@dataclass(frozen=True)
+def _get_env_bool(key: str, default: bool) -> bool:
+    """从环境变量获取布尔值"""
+    val = os.environ.get(key, "").lower()
+    if val in ("1", "true", "yes", "on"):
+        return True
+    if val in ("0", "false", "no", "off"):
+        return False
+    return default
+
+
+def _get_env_float(key: str, default: float) -> float:
+    """从环境变量获取浮点数"""
+    val = os.environ.get(key)
+    if val:
+        try:
+            return float(val)
+        except ValueError:
+            pass
+    return default
+
+
+def _get_env_int(key: str, default: int) -> int:
+    """从环境变量获取整数"""
+    val = os.environ.get(key)
+    if val:
+        try:
+            return int(val)
+        except ValueError:
+            pass
+    return default
+
+
+@dataclass
 class AnimaToolConfig:
     """
     Anima 工具配置。
 
-    说明：
-    - comfyui_url: ComfyUI Web 服务地址（默认本机 8188）
-    - output_dir: 下载图片到本地的目录（工具侧保存）
+    所有配置项都支持通过环境变量覆盖：
+    - COMFYUI_URL: ComfyUI Web 服务地址（默认 http://127.0.0.1:8188）
+    - ANIMATOOL_DOWNLOAD_IMAGES: 是否下载图片到本地（默认 true）
+    - ANIMATOOL_OUTPUT_DIR: 图片输出目录
+    - ANIMATOOL_TIMEOUT: 生成超时时间（秒，默认 600）
+    - ANIMATOOL_POLL_INTERVAL: 轮询间隔（秒，默认 1）
+    - ANIMATOOL_TARGET_MP: 目标像素数（MP，默认 1.0）
+    - ANIMATOOL_ROUND_TO: 分辨率对齐倍数（默认 16）
+
+    示例：
+        # Windows PowerShell
+        $env:COMFYUI_URL = "http://192.168.1.100:8188"
+
+        # Linux/macOS
+        export COMFYUI_URL=http://192.168.1.100:8188
+
+        # Cursor MCP 配置中
+        {
+          "mcpServers": {
+            "anima-tool": {
+              "command": "python",
+              "args": ["mcp_server.py"],
+              "env": {
+                "COMFYUI_URL": "http://192.168.1.100:8188"
+              }
+            }
+          }
+        }
     """
 
-    comfyui_url: str = "http://127.0.0.1:8188"
+    # ComfyUI 服务地址
+    # 支持：本地 (127.0.0.1)、局域网 (192.168.x.x)、Docker (host.docker.internal)
+    comfyui_url: str = field(
+        default_factory=lambda: os.environ.get("COMFYUI_URL", "http://127.0.0.1:8188")
+    )
 
     # 下载模式：把 /view 拿到的图片保存到本地
-    download_images: bool = True
-    output_dir: Path = Path(__file__).resolve().parent.parent / "outputs"
+    download_images: bool = field(
+        default_factory=lambda: _get_env_bool("ANIMATOOL_DOWNLOAD_IMAGES", True)
+    )
+    output_dir: Path = field(
+        default_factory=lambda: Path(
+            os.environ.get("ANIMATOOL_OUTPUT_DIR", "")
+        ) if os.environ.get("ANIMATOOL_OUTPUT_DIR") else Path(__file__).resolve().parent.parent / "outputs"
+    )
 
     # 轮询历史接口等待执行完成
-    timeout_s: float = 600.0
-    poll_interval_s: float = 1.0
+    timeout_s: float = field(
+        default_factory=lambda: _get_env_float("ANIMATOOL_TIMEOUT", 600.0)
+    )
+    poll_interval_s: float = field(
+        default_factory=lambda: _get_env_float("ANIMATOOL_POLL_INTERVAL", 1.0)
+    )
 
     # 分辨率生成：当只给 aspect_ratio 时，按目标像素数估算宽高
-    target_megapixels: float = 1.0
+    target_megapixels: float = field(
+        default_factory=lambda: _get_env_float("ANIMATOOL_TARGET_MP", 1.0)
+    )
     # 宽高向上取整到 round_to 的倍数
     # 注意：Anima 基于 Cosmos 架构，VAE 缩放 8 倍后还需被 spatial_patch_size=2 整除
     # 所以必须是 8×2=16 的倍数，否则会报错 "should be divisible by spatial_patch_size"
-    round_to: int = 16
+    round_to: int = field(
+        default_factory=lambda: _get_env_int("ANIMATOOL_ROUND_TO", 16)
+    )

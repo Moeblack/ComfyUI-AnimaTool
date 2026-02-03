@@ -109,18 +109,49 @@ python /path/to/ComfyUI/custom_nodes/ComfyUI-AnimaTool/servers/mcp_server.py
 
 ## 高级配置
 
-### 自定义 ComfyUI URL
+### 环境变量配置（推荐）
 
-如果 ComfyUI 运行在非默认端口，修改 `executor/config.py`：
+无需修改代码，通过环境变量配置：
 
-```python
-comfyui_url: str = "http://127.0.0.1:YOUR_PORT"
+| 环境变量 | 默认值 | 说明 |
+|----------|--------|------|
+| `COMFYUI_URL` | `http://127.0.0.1:8188` | ComfyUI 服务地址 |
+| `ANIMATOOL_TIMEOUT` | `600` | 生成超时（秒） |
+| `ANIMATOOL_DOWNLOAD_IMAGES` | `true` | 是否保存图片到本地 |
+
+### 在 MCP 配置中设置环境变量
+
+```json
+{
+  "mcpServers": {
+    "anima-tool": {
+      "command": "C:\\ComfyUI\\.venv\\Scripts\\python.exe",
+      "args": ["C:\\ComfyUI\\custom_nodes\\ComfyUI-AnimaTool\\servers\\mcp_server.py"],
+      "env": {
+        "COMFYUI_URL": "http://192.168.1.100:8188",
+        "ANIMATOOL_TIMEOUT": "300"
+      }
+    }
+  }
+}
+```
+
+### 远程 ComfyUI 配置
+
+如果 ComfyUI 运行在其他机器/Docker：
+
+**局域网**：
+```json
+"env": { "COMFYUI_URL": "http://192.168.1.100:8188" }
+```
+
+**Docker 访问宿主机**：
+```json
+"env": { "COMFYUI_URL": "http://host.docker.internal:8188" }
 ```
 
 ### 禁用图片保存
 
-默认会把生成的图片保存到 `outputs/` 目录。如需禁用：
-
-```python
-download_images: bool = False
+```json
+"env": { "ANIMATOOL_DOWNLOAD_IMAGES": "false" }
 ```
