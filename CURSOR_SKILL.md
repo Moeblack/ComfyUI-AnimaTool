@@ -18,6 +18,8 @@
 2. **必须明确安全标签**：`safe` / `sensitive` / `nsfw` / `explicit`
 3. **推荐画师组合**：`@fkey, @jima`（效果稳定）
 4. **标签顺序**：质量 → 人数 → 角色 → 作品 → 画师 → 风格 → 外观 → 标签 → 环境
+5. **画师名能用时，`style` 留空**：`style` 只在需要锁品类/媒介时才写（如 `splash art` / `watercolor`）
+6. **不要写互斥风格词**：`tags`/`environment` 里不要塞 `chibi` / `lineart` / `flat shading` 这类会抢画师风格的词
 
 ## 必填参数
 
