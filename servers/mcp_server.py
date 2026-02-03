@@ -76,7 +76,7 @@ TOOL_SCHEMA = {
         "appearance": {"type": "string", "description": "角色外观（发色、眼睛等）"},
         "artist": {
             "type": "string",
-            "description": "画师，必须以 @ 开头，如 '@fkey, @jima'"
+            "description": "画师，必须以 @ 开头。支持多画师混合（如 '@fkey, @jima'）但稳定性下降，AI 自动生成时建议只用 1 位"
         },
         "style": {"type": "string", "description": "画风"},
         "tags": {
