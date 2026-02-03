@@ -1,0 +1,184 @@
+{
+  "name": "generate_anima_image",
+  "description": "使用 Anima（circlestone-labs/Anima）在本地 ComfyUI 生成二次元/插画向图片。调用方应先按 Anima 规范生成结构化字段（顺序：[质量/元数据/年份/安全] [人数] [角色] [作品] [画师] [通用标签]），并保证安全标签明确（safe/sensitive/nsfw/explicit）。",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "prompt_hint": {
+        "type": "string",
+        "description": "可选：人类可读的简短需求摘要，仅用于日志/回显；不会直接拼进提示词。"
+      },
+      "aspect_ratio": {
+        "type": "string",
+        "description": "可选：仅指定比例时自动推算 width/height（约 1MP）。格式如 '16:9'。支持 21:9 到 9:21 的常用比例。",
+        "enum": [
+          "21:9",
+          "2:1",
+          "16:9",
+          "16:10",
+          "5:3",
+          "3:2",
+          "4:3",
+          "1:1",
+          "3:4",
+          "2:3",
+          "3:5",
+          "10:16",
+          "9:16",
+          "1:2",
+          "9:21"
+        ]
+      },
+      "target_megapixels": {
+        "type": "number",
+        "description": "当只给 aspect_ratio 时，目标像素数（MP）。默认 1.0。",
+        "default": 1.0
+      },
+      "width": {
+        "type": "integer",
+        "description": "宽度。建议约 1MP（如 1024/896/1152 等），并尽量为 8 的倍数。若提供 width/height 则优先使用它们。",
+        "minimum": 64
+      },
+      "height": {
+        "type": "integer",
+        "description": "高度。建议约 1MP，并尽量为 8 的倍数。若提供 width/height 则优先使用它们。",
+        "minimum": 64
+      },
+      "round_to": {
+        "type": "integer",
+        "description": "当从比例推算宽高时，宽高向上取整到该值的倍数（默认 8）。",
+        "default": 8,
+        "minimum": 1
+      },
+      "batch_size": {
+        "type": "integer",
+        "description": "批量大小。",
+        "default": 1,
+        "minimum": 1
+      },
+      "seed": {
+        "type": "integer",
+        "description": "随机种子。缺省则随机。",
+        "minimum": 0
+      },
+      "steps": {
+        "type": "integer",
+        "description": "步数，推荐 25-50。",
+        "default": 25,
+        "minimum": 1,
+        "maximum": 200
+      },
+      "cfg": {
+        "type": "number",
+        "description": "CFG，推荐 4-5。",
+        "default": 4.5,
+        "minimum": 0,
+        "maximum": 30
+      },
+      "sampler_name": {
+        "type": "string",
+        "description": "采样器。推荐 er_sde；也可 euler_a；想更发散可 dpmpp_2m_sde_gpu。",
+        "default": "er_sde"
+      },
+      "scheduler": {
+        "type": "string",
+        "description": "调度器。默认 simple。",
+        "default": "simple"
+      },
+      "denoise": {
+        "type": "number",
+        "description": "降噪强度。文生图通常 1.0。",
+        "default": 1.0,
+        "minimum": 0,
+        "maximum": 1
+      },
+      "filename_prefix": {
+        "type": "string",
+        "description": "输出文件名前缀（SaveImage）。",
+        "default": "AnimaTool_"
+      },
+      "quality_meta_year_safe": {
+        "type": "string",
+        "description": "质量/元数据/年份/安全标签。必须明确 safe/sensitive/nsfw/explicit 之一。示例：'masterpiece, best quality, highres, newest, year 2024, safe'"
+      },
+      "count": {
+        "type": "string",
+        "description": "人数标签，如 '1girl' / '2girls' / '1boy' / '1other'。"
+      },
+      "character": {
+        "type": "string",
+        "description": "角色名（可含括号作品信息），如 'hatsune miku' 或 'yunli (honkai star rail)'。",
+        "default": ""
+      },
+      "series": {
+        "type": "string",
+        "description": "作品/系列名，如 'vocaloid' / 'honkai star rail'。",
+        "default": ""
+      },
+      "appearance": {
+        "type": "string",
+        "description": "角色固定外观：发型发色、眼睛、身材等（不包含服装/饰品）。",
+        "default": ""
+      },
+      "artist": {
+        "type": "string",
+        "description": "画师标签，必须以 @ 开头。按 Anima 规范建议只选 1 位画师（不要多画师混合）。示例：'@wlop'。",
+        "default": ""
+      },
+      "style": {
+        "type": "string",
+        "description": "画风/渲染倾向（可选）。",
+        "default": ""
+      },
+      "tags": {
+        "type": "string",
+        "description": "核心 Danbooru 标签（逗号分隔）。建议把动作/构图/服装/表情/镜头等关键内容放这里。"
+      },
+      "nltags": {
+        "type": "string",
+        "description": "自然语言补充（可选，最多一句话，实在没法用 tag 才写）。",
+        "default": ""
+      },
+      "environment": {
+        "type": "string",
+        "description": "环境与光影（可选）。",
+        "default": ""
+      },
+      "neg": {
+        "type": "string",
+        "description": "负面提示词。建议包含：worst quality/low quality/score_1..3/blurry/jpeg artifacts/手脚崩坏反咒/text/watermark/logo 等，并加入与安全标签相反约束。",
+        "default": "worst quality, low quality, score_1, score_2, score_3, blurry, jpeg artifacts, bad anatomy, bad hands, bad feet, extra fingers, missing fingers, extra toes, text, watermark, logo"
+      },
+      "positive": {
+        "type": "string",
+        "description": "可选：直接提供最终正面提示词（将覆盖结构化拼接）。通常不建议，除非你非常清楚要写什么。",
+        "default": ""
+      },
+      "negative": {
+        "type": "string",
+        "description": "可选：负面提示词别名（等价于 neg）。",
+        "default": ""
+      },
+      "clip_name": {
+        "type": "string",
+        "description": "可选：覆盖 CLIP 文件名（默认 qwen_3_06b_base.safetensors）。"
+      },
+      "unet_name": {
+        "type": "string",
+        "description": "可选：覆盖 UNET 文件名（默认 anima-preview.safetensors）。"
+      },
+      "vae_name": {
+        "type": "string",
+        "description": "可选：覆盖 VAE 文件名（默认 qwen_image_vae.safetensors）。"
+      }
+    },
+    "required": [
+      "quality_meta_year_safe",
+      "count",
+      "artist",
+      "tags",
+      "neg"
+    ],
+    "additionalProperties": false
+  }
+}

@@ -1,0 +1,10 @@
+# 仅独立服务需要（ComfyUI extension 模式不需要额外依赖）
+
+# FastAPI 服务
+fastapi>=0.110
+uvicorn[standard]>=0.27
+pydantic>=2.6
+requests>=2.31
+
+# MCP Server（原生图片返回）
+mcp>=1.0.0
