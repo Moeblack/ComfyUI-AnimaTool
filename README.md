@@ -1,6 +1,18 @@
 # ComfyUI-AnimaTool
 
-让 AI Agent（Cursor / Claude / Gemini / OpenAI）通过 **MCP / HTTP API** 直接调用 ComfyUI 生成二次元图片，**图片原生显示**在聊天窗口。
+<p align="center">
+  <img src="assets/hero.webp" alt="ComfyUI-AnimaTool Demo" width="100%">
+</p>
+
+<p align="center">
+  <b>让 AI Agent 直接生成二次元图片，原生显示在聊天窗口</b>
+</p>
+
+<p align="center">
+  Cursor / Claude / Gemini / OpenAI → MCP / HTTP API → ComfyUI → Anima 模型
+</p>
+
+---
 
 ![Screenshot](assets/screenshot.webp)
 
