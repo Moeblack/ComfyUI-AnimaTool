@@ -27,11 +27,18 @@ pip install mcp
   "mcpServers": {
     "anima-tool": {
       "command": "<PATH_TO_PYTHON>",
-      "args": ["<PATH_TO>/ComfyUI-AnimaTool/servers/mcp_server.py"]
+      "args": ["<PATH_TO>/ComfyUI-AnimaTool/servers/mcp_server.py"],
+      "env": {
+        "COMFYUI_URL": "http://127.0.0.1:8188",
+        "COMFYUI_MODELS_DIR": "<PATH_TO>/ComfyUI/models"
+      }
     }
   }
 }
 ```
+
+> 说明：`COMFYUI_MODELS_DIR` 指向 **ComfyUI 的 models 根目录**（包含 loras/、checkpoints/ 等子目录）。
+> 该变量用于 `list_anima_models(model_type="loras")` 在本地磁盘上查找同名 `.json` sidecar 元数据文件。
 
 ### 路径示例
 
@@ -42,7 +49,11 @@ pip install mcp
   "mcpServers": {
     "anima-tool": {
       "command": "C:\\ComfyUI\\.venv\\Scripts\\python.exe",
-      "args": ["C:\\ComfyUI\\custom_nodes\\ComfyUI-AnimaTool\\servers\\mcp_server.py"]
+      "args": ["C:\\ComfyUI\\custom_nodes\\ComfyUI-AnimaTool\\servers\\mcp_server.py"],
+      "env": {
+        "COMFYUI_URL": "http://127.0.0.1:8188",
+        "COMFYUI_MODELS_DIR": "C:\\ComfyUI\\models"
+      }
     }
   }
 }
@@ -103,6 +114,19 @@ Cursor Settings → MCP → 查看 `anima-tool` 状态
 1. 确认 ComfyUI 正在运行（`http://127.0.0.1:8188`）
 2. 确认 Anima 模型文件存在
 3. 检查 ComfyUI 控制台错误
+
+### LoRA 报错："Value not in list: lora_name ..."
+
+这是 ComfyUI 的枚举校验：`LoraLoaderModelOnly.lora_name` 必须与 `GET /models/loras` 返回的字符串 **逐字一致**。
+
+- Windows 下通常是反斜杠路径（例如 `_Anima\cosmic_xxx.safetensors`）
+- 如果你在 JSON 里写，需要写成 `_Anima\\cosmic_xxx.safetensors`
+
+PowerShell 一行命令获取 LoRA 列表：
+
+```powershell
+Invoke-RestMethod -Uri "http://127.0.0.1:8188/models/loras"
+```
 
 ### 手动测试
 

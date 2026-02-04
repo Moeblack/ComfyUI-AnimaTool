@@ -94,8 +94,41 @@ TOOL_SCHEMA = {
         "cfg": {"type": "number", "description": "CFG", "default": 4.5},
         "sampler_name": {"type": "string", "description": "采样器", "default": "er_sde"},
         "seed": {"type": "integer", "description": "种子（不填则随机）"},
+        "loras": {
+            "type": "array",
+            "description": (
+                "可选：多 LoRA（仅 UNET）。会在 UNETLoader 与 KSampler 之间按顺序链式注入 LoraLoaderModelOnly。"
+                "重要：ComfyUI 会对 lora_name 做枚举校验，必须与 GET /models/loras 返回的字符串完全一致（含子目录分隔符）。"
+                "Windows 下通常使用反斜杠 `\\` 作为子目录分隔符；如果在 JSON 字符串里手写，需要写成 `\\\\` 才表示一个 `\\`。"
+                "另外：list_anima_models(model_type=loras) 只返回带同名 .json sidecar 元数据的 LoRA（强制要求）。"
+            ),
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "LoRA 名称（必须逐字匹配 /models/loras 的返回值；可包含子目录）",
+                    },
+                    "weight": {"type": "number", "default": 1.0}
+                },
+                "required": ["name"]
+            }
+        },
     },
     "required": ["quality_meta_year_safe", "count", "artist", "tags", "neg"]
+}
+
+
+LIST_MODELS_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "model_type": {
+            "type": "string",
+            "enum": ["loras", "diffusion_models", "vae", "text_encoders"],
+            "description": "要查询的模型类型。loras 将只返回存在同名 .json sidecar 元数据文件的 LoRA（强制要求）。提示：生成时 lora_name 必须与 /models/loras 返回值逐字一致（Windows 多为 \\\\ 分隔子目录）。",
+        }
+    },
+    "required": ["model_type"],
 }
 
 
@@ -107,35 +140,51 @@ async def list_tools() -> list[Tool]:
             name="generate_anima_image",
             description="使用 Anima 模型生成二次元/插画图片。画师必须以 @ 开头（如 @fkey）。必须明确安全标签（safe/sensitive/nsfw/explicit）。支持并行调用：生成多张图时可同时发起多个请求，无需串行等待。",
             inputSchema=TOOL_SCHEMA,
-        )
+        ),
+        Tool(
+            name="list_anima_models",
+            description=(
+                "查询 ComfyUI 当前可用的模型文件列表（loras/diffusion_models/vae/text_encoders）。"
+                "注意：当 model_type=loras 时，强制只返回存在同名 .json sidecar 元数据文件的 LoRA。"
+            ),
+            inputSchema=LIST_MODELS_SCHEMA,
+        ),
     ]
 
 
 @server.call_tool()
 async def call_tool(name: str, arguments: Dict[str, Any]) -> Sequence[TextContent | ImageContent]:
     """调用工具"""
-    if name != "generate_anima_image":
-        return [TextContent(type="text", text=f"未知工具: {name}")]
-
     try:
         executor = get_executor()
-        
+
+        if name == "list_anima_models":
+            model_type = str((arguments or {}).get("model_type") or "").strip()
+            if not model_type:
+                return [TextContent(type="text", text="参数错误：model_type 不能为空")]
+
+            result = await asyncio.to_thread(executor.list_models, model_type)
+            return [TextContent(type="text", text=json.dumps(result, ensure_ascii=False, indent=2))]
+
+        if name != "generate_anima_image":
+            return [TextContent(type="text", text=f"未知工具: {name}")]
+
         # 在线程池中执行同步操作
         result = await asyncio.to_thread(executor.generate, arguments)
-        
+
         if not result.get("success"):
             return [TextContent(type="text", text=f"生成失败: {result}")]
-        
+
         # 构建返回内容
         contents: list[TextContent | ImageContent] = []
-        
+
         # 添加文本信息
         info_text = f"""生成成功！
 - 分辨率: {result['width']} x {result['height']}
 - 正面提示词: {result['positive'][:100]}...
 - 图片数量: {len(result['images'])}"""
         contents.append(TextContent(type="text", text=info_text))
-        
+
         # 添加图片（base64 格式，原生显示）
         for img in result.get("images", []):
             if img.get("base64") and img.get("mime_type"):
@@ -146,9 +195,9 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> Sequence[TextConten
                         mimeType=img["mime_type"],
                     )
                 )
-        
+
         return contents
-        
+
     except Exception as e:
         return [TextContent(type="text", text=f"错误: {str(e)}")]
 

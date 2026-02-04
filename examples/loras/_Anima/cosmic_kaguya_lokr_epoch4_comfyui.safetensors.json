@@ -1,0 +1,60 @@
+{
+  "display_name": "Cosmic Princess Kaguya (LoKR) - epoch4",
+  "model_type": "lora",
+  "algo": "lokr",
+  "base_model": "circlestone-labs/Anima",
+  "filename": "_Anima/cosmic_kaguya_lokr_epoch4_comfyui.safetensors",
+  "description": "自训练 LoRA 示例（用于演示 ComfyUI-AnimaTool 的 LoRA sidecar 元数据机制）。\n\n将本文件放到 ComfyUI/models/loras/_Anima/ 目录下，并确保与 LoRA 文件同名 + .json：\n  cosmic_kaguya_lokr_epoch4_comfyui.safetensors.json\n\n这样 MCP 工具 list_anima_models(model_type=\"loras\") 才会返回该 LoRA。\n\n注：sidecar JSON 的字段结构完全自定义，本项目只要求其为合法 JSON。",
+  "recommended": {
+    "weight": 0.9,
+    "range": [
+      0.8,
+      1.0
+    ],
+    "notes": "这是 UNET-only LoRA（LoraLoaderModelOnly）。如出现过拟合/脏图，可降低权重或减少 steps。"
+  },
+  "triggers": {
+    "style": [
+      "@spacetime kaguya"
+    ],
+    "series": [
+      "cosmic princess kaguya"
+    ],
+    "characters": [
+      {
+        "name": "kaguya",
+        "variants": [
+          "(tsukuyomi)"
+        ]
+      }
+    ],
+    "notes": "角色变体写法：character (variant)，例如 kaguya (tsukuyomi)"
+  },
+  "training": {
+    "lora_type": "lokr",
+    "lora_rank": 32,
+    "lora_alpha": 32.0,
+    "lokr_factor": 8,
+    "resolution": 1024,
+    "epochs": 10,
+    "batch_size": 1,
+    "learning_rate": 0.0001,
+    "mixed_precision": "bf16",
+    "shuffle_caption": true,
+    "keep_tokens": 6
+  },
+  "data_sources": [
+    "4K 动画电影截图",
+    "手动筛选高质量帧",
+    "VLM 自动打标 (Gemini 3 Flash)"
+  ],
+  "prompt_notes": [
+    "标签使用空格分隔，不用下划线（例如 long hair 而非 long_hair）",
+    "画师/画风触发词必须带 @ 前缀（例如 @spacetime kaguya）"
+  ],
+  "compatibility": [
+    "ComfyUI"
+  ],
+  "license": "personal-use-only",
+  "source": "self-trained"
+}

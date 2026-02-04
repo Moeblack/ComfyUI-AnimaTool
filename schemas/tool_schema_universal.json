@@ -1,6 +1,6 @@
 {
   "name": "generate_anima_image",
-  "description": "使用 Anima（circlestone-labs/Anima）在本地 ComfyUI 生成二次元/插画向图片。调用方应先按 Anima 规范生成结构化字段（顺序：[质量/元数据/年份/安全] [人数] [角色] [作品] [画师] [通用标签]），并保证安全标签明确（safe/sensitive/nsfw/explicit）。支持并行调用：生成多张图时可同时发起多个请求，无需串行等待。",
+  "description": "使用 Anima（circlestone-labs/Anima）在本地 ComfyUI 生成二次元/插画向图片。调用方应先按 Anima 规范生成结构化字段（顺序：[质量/元数据/年份/安全] [人数] [角色] [作品] [画师] [风格] [外观] [标签] [环境] [自然语言]；自然语言(nltags)建议放最后），并保证安全标签明确（safe/sensitive/nsfw/explicit）。支持并行调用：生成多张图时可同时发起多个请求，无需串行等待。",
   "parameters": {
     "type": "object",
     "properties": {
@@ -170,6 +170,27 @@
       "vae_name": {
         "type": "string",
         "description": "可选：覆盖 VAE 文件名（默认 qwen_image_vae.safetensors）。"
+      },
+      "loras": {
+        "type": "array",
+        "description": "可选：多 LoRA（仅 UNET，不修改 CLIP）。会在 UNETLoader 与 KSampler 之间按顺序链式注入 LoraLoaderModelOnly。重要：ComfyUI 会对 lora_name 做枚举校验，必须与 /models/loras 返回的字符串完全一致（含子目录分隔符）。",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "LoRA 文件名（位于 ComfyUI/models/loras/ 下，可包含子目录）。必须与 ComfyUI 接口 GET /models/loras 返回的条目逐字一致。Windows 下 /models/loras 通常返回反斜杠路径（例如 `_Anima\\cosmic_xxx.safetensors`）；如果你在 JSON 里手写，需要写成 `_Anima\\\\cosmic_xxx.safetensors`（`\\\\` 表示一个反斜杠）。建议直接从 /models/loras 复制，或使用本工具的 list_anima_models(model_type=\"loras\")（仅返回带同名 .json sidecar 元数据的 LoRA）。"
+            },
+            "weight": {
+              "type": "number",
+              "description": "LoRA UNET 权重。",
+              "default": 1.0
+            }
+          },
+          "required": [
+            "name"
+          ]
+        }
       }
     },
     "required": [

@@ -238,6 +238,7 @@ python -m servers.http_server
 | `cfg` | float | 4.5 | CFG |
 | `seed` | int | 随机 | 种子 |
 | `sampler_name` | string | `er_sde` | 采样器 |
+| `loras` | array | `[]` | 可选：追加 LoRA（仅 UNET）。`name` 为 `ComfyUI/models/loras/` 下的相对路径（可含子目录），示例：`[{"name":"_Anima/cosmic_kaguya_lokr_epoch4_comfyui.safetensors","weight":0.8}]` |
 
 ### Supported Aspect Ratios
 
@@ -246,6 +247,67 @@ python -m servers.http_server
 方形: 1:1
 竖屏: 3:4, 2:3, 3:5, 10:16, 9:16, 1:2, 9:21
 ```
+
+---
+
+### LoRA（可选）
+
+> 当前版本会在 **UNETLoader → KSampler(model)** 之间链式注入 `LoraLoaderModelOnly`，因此**只对 UNET 生效**（不会改 CLIP）。
+
+#### 1）把 LoRA 放到 ComfyUI 的 loras 目录
+
+你的 LoRA 路径（示例）：
+
+- `G:\\AIGC\\ComfyUICommon\\models\\loras\\_Anima\\cosmic_kaguya_lokr_epoch4_comfyui.safetensors`
+
+对应请求里 `loras[i].name` 应写为（相对 `models/loras/`）：
+
+- 推荐写法：`_Anima/cosmic_kaguya_lokr_epoch4_comfyui.safetensors`
+
+> 说明：ComfyUI 侧实际会校验 `lora_name` 是否在 `GET /models/loras` 的返回列表里。
+> - Windows 环境下该列表通常是反斜杠路径（例如 `_Anima\\cosmic_kaguya_lokr_epoch4_comfyui.safetensors`）
+> - **本项目会根据 `/models/loras` 返回值自动规范化分隔符**（你用 `/` 或 `\\` 都可以），但如果你直接在 ComfyUI 里手工填 `lora_name`，请务必复制接口返回值。
+
+#### 2）生成时传入 loras 参数
+
+可直接参考本仓库示例：[`examples/requests/generate_with_cosmic_kaguya_lora.json`](examples/requests/generate_with_cosmic_kaguya_lora.json)
+
+```json
+{
+  "aspect_ratio": "3:4",
+  "quality_meta_year_safe": "newest, year 2024, safe",
+  "count": "1girl",
+  "character": "kaguya",
+  "series": "cosmic princess kaguya",
+  "artist": "@spacetime kaguya",
+  "appearance": "long hair, black hair, purple eyes",
+  "tags": "school uniform, smile, standing, looking at viewer",
+  "environment": "classroom, window, sunlight",
+  "nltags": "A cheerful girl stands by the window.",
+  "neg": "worst quality, low quality, blurry, bad hands, nsfw",
+  "loras": [
+    {
+      "name": "_Anima/cosmic_kaguya_lokr_epoch4_comfyui.safetensors",
+      "weight": 0.9
+    }
+  ]
+}
+```
+
+#### 3）（可选）为 LoRA 写 sidecar 元数据，让 MCP 的 list 工具可见
+
+为了避免把整个 `loras` 目录无差别暴露给 MCP 客户端，本项目在 `list_anima_models(model_type="loras")` 时**强制只返回存在同名 `.json` sidecar 元数据文件的 LoRA**。
+
+- LoRA 文件：`ComfyUI/models/loras/_Anima/cosmic_kaguya_lokr_epoch4_comfyui.safetensors`
+- sidecar：`ComfyUI/models/loras/_Anima/cosmic_kaguya_lokr_epoch4_comfyui.safetensors.json`
+
+示例 sidecar 文件可参考：
+
+- [`examples/loras/_Anima/cosmic_kaguya_lokr_epoch4_comfyui.safetensors.json`](examples/loras/_Anima/cosmic_kaguya_lokr_epoch4_comfyui.safetensors.json)
+
+> sidecar JSON 的字段结构完全自定义，本项目只要求其为合法 JSON。
+
+> 注意：要让 MCP 服务端读取该 sidecar，你还需要设置 `COMFYUI_MODELS_DIR` 指向本机的 **models 根目录**（例如 `C:\\ComfyUI\\models`；你的示例则是 `G:\\AIGC\\ComfyUICommon\\models`）。远程 ComfyUI 场景通常无法读取远程文件系统，因此只支持“直接使用 loras 参数”，不支持 list。
 
 ---
 
@@ -310,7 +372,7 @@ ComfyUI-AnimaTool/
 
 | 环境变量 | 默认值 | 说明 |
 |----------|--------|------|
-| `COMFYUI_MODELS_DIR` | *(未设置)* | ComfyUI models 目录路径，用于模型预检查 |
+| `COMFYUI_MODELS_DIR` | *(未设置)* | ComfyUI models 目录路径，用于模型预检查；同时也用于 **LoRA sidecar 元数据读取**（`list_anima_models(model_type="loras")`） |
 | `ANIMATOOL_UNET_NAME` | `anima-preview.safetensors` | UNET 模型文件名 |
 | `ANIMATOOL_CLIP_NAME` | `qwen_3_06b_base.safetensors` | CLIP 模型文件名 |
 | `ANIMATOOL_VAE_NAME` | `qwen_image_vae.safetensors` | VAE 模型文件名 |

@@ -131,6 +131,43 @@ worst quality, low quality, score_1, score_2, score_3, blurry, jpeg artifacts, b
 }
 ```
 
+## LoRA（可选）
+
+如果需要加载 LoRA，使用 `loras` 数组：
+
+- `name`：LoRA 名称（可包含子目录）
+- `weight`：LoRA 权重（UNET-only）
+
+**重要：`name` 必须与 ComfyUI 接口 `GET /models/loras` 返回的字符串逐字一致**，否则会触发 ComfyUI 校验错误（例如：`Value not in list: lora_name ... not in (list ...)`）。
+
+- Windows 下 `/models/loras` 通常返回反斜杠路径：`_Anima\xxx.safetensors`
+- 在 JSON 里你需要写成：`_Anima\\xxx.safetensors`（`\\` 表示一个反斜杠）
+
+一行命令获取 LoRA 列表（PowerShell）：
+
+```powershell
+Invoke-RestMethod -Uri "http://127.0.0.1:8188/models/loras"
+```
+
+示例：
+
+```json
+{
+  "aspect_ratio": "3:4",
+  "quality_meta_year_safe": "masterpiece, best quality, newest, year 2024, safe",
+  "count": "1girl",
+  "artist": "@fkey",
+  "tags": "full body, fantasy outfit, glowing",
+  "loras": [
+    {
+      "name": "_Anima\\cosmic_kaguya_lokr_epoch4_comfyui.safetensors",
+      "weight": 0.9
+    }
+  ],
+  "neg": "worst quality, low quality, blurry, bad anatomy, bad hands, extra fingers, missing fingers, text, watermark, logo, nsfw"
+}
+```
+
 ## 常见问题
 
 ### 手脚崩坏？

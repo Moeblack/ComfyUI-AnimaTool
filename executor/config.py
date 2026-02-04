@@ -118,9 +118,13 @@ class AnimaToolConfig:
     # 模型配置
     # -------------------------
     # ComfyUI models 根目录（用于模型预检查）
-    # 如果不设置，则跳过预检查（远程 ComfyUI 场景）
+    # 如果不设置，则尝试自动探测，探测失败则跳过预检查（远程 ComfyUI 场景）
     comfyui_models_dir: Optional[Path] = field(
-        default_factory=lambda: Path(os.environ["COMFYUI_MODELS_DIR"]) if os.environ.get("COMFYUI_MODELS_DIR") else None
+        default_factory=lambda: (
+            Path(os.environ["COMFYUI_MODELS_DIR"]) if os.environ.get("COMFYUI_MODELS_DIR") else 
+            (Path.cwd() / "models" if (Path.cwd() / "models").exists() else 
+             (Path(__file__).resolve().parent.parent.parent.parent / "models" if (Path(__file__).resolve().parent.parent.parent.parent / "models").exists() else None))
+        )
     )
 
     # 模型文件名（可通过环境变量或参数覆盖）

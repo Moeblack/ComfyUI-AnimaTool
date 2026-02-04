@@ -26,6 +26,11 @@
 
 8) **非二次元风格**：如需非二次元数据集风格，第一行写 dataset tag（`ye-pop` 或 `deviantart`），换行后再给标题/描述，再给正常标签行。
 
+9) **LoRA 名称必须与 ComfyUI 列表逐字一致**：当输出 JSON 并使用 `loras` 字段时，`loras[].name` 必须与 ComfyUI 接口 `GET /models/loras` 返回的条目完全一致（包括子目录分隔符）。
+
+- Windows 下通常返回反斜杠路径（例如 `_Anima\cosmic_xxx.safetensors`）
+- 如果要写进 JSON 字符串，需要写成 `_Anima\\cosmic_xxx.safetensors`（`\\` 表示一个反斜杠）
+
 ## 推荐默认参数（可按需微调）
 
 - **分辨率**：约 1MP（例如 1024×1024 / 896×1152 / 1152×896）
@@ -66,6 +71,12 @@
   "artist": "@fkey, @jima",
   "style": "anime illustration, highly detailed, vibrant colors",
   "tags": "full body, dynamic pose, holding sword, dutch angle, particle effects",
+  "loras": [
+    {
+      "name": "_Anima\\cosmic_kaguya_lokr_epoch4_comfyui.safetensors",
+      "weight": 0.9
+    }
+  ],
   "nltags": "",
   "environment": "cinematic lighting, depth of field, sky, clouds",
   "neg": "worst quality, low quality, score_1, score_2, score_3, blurry, jpeg artifacts, bad anatomy, bad hands, bad feet, extra fingers, missing fingers, text, watermark, logo, nsfw, explicit"
@@ -73,3 +84,5 @@
 ```
 
 > 说明：若想只指定比例，可用 `aspect_ratio`（如 `16:10`），并省略 width/height，由工具侧推算。
+>
+> LoRA 相关：如果你不确定 `loras[].name` 应该怎么写，优先让用户执行 `GET /models/loras`（或 PowerShell: `Invoke-RestMethod -Uri "http://127.0.0.1:8188/models/loras"`）并复制返回值。
