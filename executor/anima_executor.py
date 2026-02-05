@@ -164,6 +164,7 @@ class AnimaExecutor:
 
         - model_type=loras：强制只返回存在 sidecar 元数据（.json）的 LoRA。
         - 其他类型：返回 ComfyUI API 的原始列表。
+        - 返回的 name 统一使用正斜杠（/）作为分隔符，避免 Windows 反斜杠转义问题。
         """
         model_type = (model_type or "").strip()
         if model_type not in self._SUPPORTED_MODEL_TYPES:
@@ -176,13 +177,17 @@ class AnimaExecutor:
             raise RuntimeError(f"ComfyUI /models/{model_type} 返回异常：{files!r}")
 
         results: List[Dict[str, Any]] = []
-        for name in files:
-            if not isinstance(name, str) or not name.strip():
+        for raw_name in files:
+            if not isinstance(raw_name, str) or not raw_name.strip():
                 continue
-            item: Dict[str, Any] = {"name": name}
+            
+            # 统一使用正斜杠格式返回，避免 Windows 反斜杠在 JSON 中的转义问题
+            normalized_name = raw_name.replace("\\", "/")
+            item: Dict[str, Any] = {"name": normalized_name}
 
             if model_type == "loras":
-                meta = self._read_lora_metadata(name)
+                # 读取 sidecar 时仍使用原始路径（因为文件系统可能需要系统分隔符）
+                meta = self._read_lora_metadata(raw_name)
                 if not meta:
                     # 强制要求：不提供 json sidecar 的 LoRA 不允许被 list 出来
                     continue
