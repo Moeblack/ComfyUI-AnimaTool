@@ -1,9 +1,13 @@
 # ComfyUI-AnimaTool
 
-> [!WARNING]
-> **暂不支持 Cherry Studio**  
-> Cherry Studio 的 MCP 客户端未正确处理 `ImageContent` 类型，会将 base64 图片数据作为纯文本字符串返回，而非渲染为图片。请使用正确实现 MCP 规范的客户端。
-> 注：已经提交PR，等待合并中
+> [!TIP]
+> **Cherry Studio 现已支持 MCP 图片显示！**  
+> 我们提交的 PR 已修复 Cherry Studio 对 MCP `ImageContent` 的处理。在官方合并之前，你可以使用预览版体验完整的 MCP 图片功能：  
+> **下载预览版** → [Cherry Studio v1.7.16-preview](https://github.com/Moeblack/cherry-studio/releases/tag/v1.7.16-preview)  
+> 包含以下修复：
+> - 支持按助手单独配置是否将 MCP 工具图片发送给模型
+> - 修复 OpenAI 兼容提供商的 base64 图片数据处理
+> - 修复 Gemini 的 MCP 多模态工具结果转换
 
 <p align="center">
   <img src="assets/hero.webp" alt="ComfyUI-AnimaTool Demo" width="100%">
@@ -61,6 +65,16 @@
 ---
 
 ## Installation
+
+### Cherry Studio 用户
+
+如果你使用 Cherry Studio 作为 MCP 客户端，需要安装我们的预览版才能正确显示 MCP 返回的图片：
+
+1. 下载 [Cherry Studio v1.7.16-preview](https://github.com/Moeblack/cherry-studio/releases/tag/v1.7.16-preview)（安装版或便携版均可）
+2. 安装后按下方「方式 1：MCP Server」配置即可
+3. 生成的图片会直接显示在聊天窗口中
+
+> 官方版 Cherry Studio 尚未合并此修复，使用官方版会导致图片显示为 base64 乱码。
 
 ### Method 1: ComfyUI Manager (Recommended)
 
