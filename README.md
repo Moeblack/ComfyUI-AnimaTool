@@ -3,6 +3,7 @@
 > [!WARNING]
 > **暂不支持 Cherry Studio**  
 > Cherry Studio 的 MCP 客户端未正确处理 `ImageContent` 类型，会将 base64 图片数据作为纯文本字符串返回，而非渲染为图片。请使用正确实现 MCP 规范的客户端。
+> 注：已经提交PR，等待合并中
 
 <p align="center">
   <img src="assets/hero.webp" alt="ComfyUI-AnimaTool Demo" width="100%">
