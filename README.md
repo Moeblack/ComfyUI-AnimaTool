@@ -34,6 +34,31 @@
 
 ---
 
+## Related Projects
+
+### AnimaLoraToolkit - LoRA 训练工具
+
+如果你想训练自己的 LoRA/LoKr 来搭配 Anima 使用，推荐使用 **[AnimaLoraToolkit](https://github.com/Moeblack/AnimaLoraToolkit)**：
+
+- **YAML 配置文件** - 通过 `--config` 加载，命令行参数可覆盖
+- **LoRA / LoKr 双模式** - 标准 LoRA 和 LyCORIS LoKr
+- **ComfyUI 兼容** - 输出的 safetensors 可直接在本工具中使用
+- **JSON Caption 支持** - 结构化标签，分类 shuffle
+- **实时训练监控** - Web 界面显示 loss 曲线和采样图
+- **Checkpoint 恢复** - 保存完整训练状态，支持断点续训
+
+训练完成后，将 LoRA 放入 `ComfyUI/models/loras/` 目录，即可通过本工具的 `loras` 参数加载使用。
+
+#### 示例：Cosmic Princess Kaguya LoKr
+
+使用 AnimaLoraToolkit 训练的画风+角色 LoKr，还原 Netflix 动画电影《超时空辉耀姬！》的 4K 剧场版画风：
+
+- **下载**：[Civitai](https://civitai.com/models/2366705)
+- **触发词**：`@spacetime kaguya`（画风）、`cosmic princess kaguya`（作品）
+- **推荐权重**：0.8 - 1.0
+
+---
+
 ## Installation
 
 ### Method 1: ComfyUI Manager (Recommended)
