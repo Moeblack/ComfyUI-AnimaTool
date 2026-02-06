@@ -76,7 +76,7 @@ TOOL_SCHEMA = {
         "appearance": {"type": "string", "description": "角色外观（发色、眼睛等）"},
         "artist": {
             "type": "string",
-            "description": "画师，必须以 @ 开头。支持多画师混合（如 '@fkey, @jima'），但稳定性下降，AI 自动生成时建议只用 1 位。画师名遵循特定格式：1. 名字中间无下划线（如 @kawakami rokkaku, 而非 @kawakami_rokkaku）；2. 以 @ 开头（如 @fkey）。如果画师名里本身有括号，如 @yd (orange maru), 则需要用转移符号转义括号，记作 @yd \\(orange maru\\), 以避免被解析器误认为是附加信息。"
+            "description": "画师，必须以 @ 开头（如 @fkey）。多画师逗号分隔。"
         },
         "style": {"type": "string", "description": "画风"},
         "tags": {
@@ -106,23 +106,27 @@ TOOL_SCHEMA = {
         },
         "loras": {
             "type": "array",
-            "description": (
-                "可选：多 LoRA（仅 UNET）。会在 UNETLoader 与 KSampler 之间按顺序链式注入 LoraLoaderModelOnly。"
-                "重要：ComfyUI 会对 lora_name 做枚举校验，必须与 GET /models/loras 返回的字符串完全一致（含子目录分隔符）。"
-                "可使用 list_anima_models(model_type=loras) 工具查询当前可用的 LoRA 模型列表，并确保使用的 LoRA 存在同名 .json sidecar 元数据文件（强制要求）。"
-                "另外：list_anima_models(model_type=loras) 只返回带同名 .json sidecar 元数据的 LoRA（强制要求）。"
-            ),
+            "description": "LoRA 数组（仅 UNET）。name 须匹配 list_anima_models(model_type=loras) 返回值。",
             "items": {
                 "type": "object",
                 "properties": {
-                    "name": {
-                        "type": "string",
-                        "description": "LoRA 名称（必须逐字匹配 /models/loras 的返回值；可包含子目录）",
-                    },
+                    "name": {"type": "string", "description": "LoRA 文件名（含子目录）"},
                     "weight": {"type": "number", "default": 1.0}
                 },
                 "required": ["name"]
             }
+        },
+        "unet_name": {
+            "type": "string",
+            "description": "高级：UNET 模型文件名，默认 Anima。用 list_anima_models(model_type=diffusion_models) 查询可用模型。",
+        },
+        "clip_name": {
+            "type": "string",
+            "description": "高级：文本编码器文件名，默认 Qwen3。用 list_anima_models(model_type=text_encoders) 查询。",
+        },
+        "vae_name": {
+            "type": "string",
+            "description": "高级：VAE 文件名，默认 Anima VAE。用 list_anima_models(model_type=vae) 查询。",
         },
     },
     "required": ["quality_meta_year_safe", "count", "artist", "tags", "neg"]
@@ -135,7 +139,7 @@ LIST_MODELS_SCHEMA = {
         "model_type": {
             "type": "string",
             "enum": ["loras", "diffusion_models", "vae", "text_encoders"],
-            "description": "要查询的模型类型。loras 将只返回存在同名 .json sidecar 元数据文件的 LoRA（强制要求）。提示：生成时 lora_name 必须与 /models/loras 返回值逐字一致（Windows 多为 \\\\ 分隔子目录）。",
+            "description": "模型类型。loras 仅返回有 .json sidecar 元数据的 LoRA。",
         }
     },
     "required": ["model_type"],

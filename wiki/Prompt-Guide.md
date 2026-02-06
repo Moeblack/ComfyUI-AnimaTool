@@ -69,10 +69,12 @@ worst quality, low quality, score_1, score_2, score_3, blurry, jpeg artifacts, b
 - `@ask_(askzy)` - 细腻唯美风
 - `@nardack` - 柔和梦幻风
 
-### 使用技巧
+### 画师名格式规则
 
-- 可以组合多个画师：`@fkey, @jima`
-- 画师名必须带 `@` 前缀
+- 必须以 `@` 开头：`@fkey`，而非 `fkey`
+- 名字中间**无下划线**：`@kawakami rokkaku`，而非 `@kawakami_rokkaku`
+- 多画师用逗号分隔：`@fkey, @jima`（但稳定性下降，建议最多 1-2 位）
+- 如果画师名本身含括号（如 `yd (orange maru)`），需要转义：`@yd \(orange maru\)`
 - 不常见的画师可能效果不稳定
 
 ## 长宽比
@@ -136,12 +138,16 @@ worst quality, low quality, score_1, score_2, score_3, blurry, jpeg artifacts, b
 如果需要加载 LoRA，使用 `loras` 数组：
 
 - `name`：LoRA 名称（可包含子目录）
-- `weight`：LoRA 权重（UNET-only）
+- `weight`：LoRA 权重（默认 1.0，UNET-only）
 
-**重要：`name` 必须与 ComfyUI 接口 `GET /models/loras` 返回的字符串逐字一致**，否则会触发 ComfyUI 校验错误（例如：`Value not in list: lora_name ... not in (list ...)`）。
+### 技术细节
 
-- Windows 下 `/models/loras` 通常返回反斜杠路径：`_Anima\xxx.safetensors`
-- 在 JSON 里你需要写成：`_Anima\\xxx.safetensors`（`\\` 表示一个反斜杠）
+- LoRA 仅作用于 UNET（不影响 CLIP），在 UNETLoader → KSampler 之间链式注入 `LoraLoaderModelOnly`
+- **`name` 必须与 `list_anima_models(model_type=loras)` 或 ComfyUI `GET /models/loras` 返回值逐字一致**，否则触发 ComfyUI 校验错误
+- `list_anima_models(model_type=loras)` 仅返回存在同名 `.json` sidecar 元数据文件的 LoRA（强制要求）
+- Windows 下 `/models/loras` 通常返回反斜杠路径（如 `_Anima\xxx.safetensors`），在 JSON 中写作 `_Anima\\xxx.safetensors`
+- 本工具会自动规范化路径分隔符（`/` 或 `\` 都可以）
+- 远程 ComfyUI 场景下 list 功能不可用（无法读取远程文件系统），但可直接传 `loras` 参数
 
 一行命令获取 LoRA 列表（PowerShell）：
 
@@ -194,3 +200,34 @@ anthro, furry
 - 使用推荐的画师组合
 - 避免使用过于小众的画师
 - 可以添加 `style` 字段辅助
+
+---
+
+## Reroll 与批量生成
+
+### 重新生成（Reroll）
+
+每次生成后会自动记录参数。可以基于历史重新生成：
+
+- `reroll_anima_image(source="last")` — 相同参数，新随机 seed
+- `reroll_anima_image(source="last", artist="@ciloranko")` — 换画师
+- `reroll_anima_image(source="12")` — 回溯第 12 条记录
+- `list_anima_history()` — 查看最近的生成记录
+
+### 批量生成
+
+- **`repeat`**（推荐）：提交 N 次独立任务，每次随机 seed，显存与单张相同
+- **`batch_size`**：单次任务内 latent batch，速度快但更吃显存
+- 总张数 = `repeat` × `batch_size`
+
+```json
+{
+  "repeat": 3,
+  "aspect_ratio": "3:4",
+  "quality_meta_year_safe": "masterpiece, best quality, newest, year 2024, safe",
+  "count": "1girl",
+  "artist": "@fkey",
+  "tags": "upper body, smile",
+  "neg": "worst quality, low quality, blurry"
+}
+```
