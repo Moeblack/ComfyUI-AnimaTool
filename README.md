@@ -6,16 +6,19 @@
 > - 🔄 **更换卡池功能** — 可以切换 UNET / CLIP / VAE 模型了，试试新卡池
 > - 📋 **寻访记录功能** — 查看历史生成记录，支持 reroll 重新抽卡
 >
-> 🚧 **正在开发** — [酒馆 MCP 客户端（SillyTavern）](https://github.com/Moeblack/sillytavern-mcp-client)，糖糖开发中
+> ✅ **酒馆 MCP 客户端已发布** — [SillyTavern MCP Client](https://github.com/Moeblack/sillytavern-mcp-client)，支持 stdio + Streamable HTTP 传输
+> 
+> ✅ **工具调用体验修复** — [Tool Use Fix](https://github.com/Moeblack/sillytavern-tooluse-fix)，合并碎片消息、图片直接显示、Swipe 代理
 
 > [!TIP]
 > **Cherry Studio 现已支持 MCP 图片显示！**  
 > 我们提交的 PR 已修复 Cherry Studio 对 MCP `ImageContent` 的处理。在官方合并之前，你可以使用预览版体验完整的 MCP 图片功能：  
-> **下载预览版** → [Cherry Studio v1.7.16-preview](https://github.com/Moeblack/cherry-studio/releases/tag/v1.7.16-preview)  
+> **下载预览版** → [Cherry Studio v1.7.17-preview](https://github.com/Moeblack/cherry-studio/releases/tag/v1.7.17-preview)  
 > 包含以下修复：
 > - 支持按助手单独配置是否将 MCP 工具图片发送给模型
 > - 修复 OpenAI 兼容提供商的 base64 图片数据处理
 > - 修复 Gemini 的 MCP 多模态工具结果转换
+> - **性能修复 v2**：解决多轮出图后严重卡顿问题 — IPC 排除大 slice + base64 就地 strip（修复了 v1.7.16-preview2 中 Zod safeParse 克隆导致 strip 无效的问题）— [上游 PR #12766](https://github.com/CherryHQ/cherry-studio/pull/12766)
 
 <p align="center">
   <img src="assets/hero.webp" alt="ComfyUI-AnimaTool Demo" width="100%">
@@ -51,6 +54,23 @@
 
 ## Related Projects
 
+### SillyTavern 全家桶
+
+在 SillyTavern（酒馆）中使用 AnimaTool 生成图片？推荐安装以下配套插件：
+
+| 项目 | 说明 |
+|------|------|
+| [SillyTavern MCP Client](https://github.com/Moeblack/sillytavern-mcp-client) | 酒馆 MCP 客户端，连接 AnimaTool 等 MCP Server，支持 stdio + Streamable HTTP |
+| [SillyTavern Tool Use Fix](https://github.com/Moeblack/sillytavern-tooluse-fix) | 工具调用体验修复，合并碎片消息、图片直接显示在对话中 |
+
+```
+ComfyUI-AnimaTool (本项目，MCP Server)
+        ↕ MCP 协议 (stdio / streamable-http)
+SillyTavern MCP Client (连接 + 工具注册)
+        ↕ SillyTavern Tool Calling
+Tool Use Fix (合并显示 + 体验优化)
+```
+
 ### AnimaLoraToolkit - LoRA 训练工具
 
 如果你想训练自己的 LoRA/LoKr 来搭配 Anima 使用，推荐使用 **[AnimaLoraToolkit](https://github.com/Moeblack/AnimaLoraToolkit)**：
@@ -80,11 +100,12 @@
 
 如果你使用 Cherry Studio 作为 MCP 客户端，需要安装我们的预览版才能正确显示 MCP 返回的图片：
 
-1. 下载 [Cherry Studio v1.7.16-preview](https://github.com/Moeblack/cherry-studio/releases/tag/v1.7.16-preview)（安装版或便携版均可）
+1. 下载 [Cherry Studio v1.7.17-preview](https://github.com/Moeblack/cherry-studio/releases/tag/v1.7.17-preview)（安装版或便携版均可）
 2. 安装后按下方「方式 1：MCP Server」配置即可
 3. 生成的图片会直接显示在聊天窗口中
 
-> 官方版 Cherry Studio 尚未合并此修复，使用官方版会导致图片显示为 base64 乱码。
+> 官方版 Cherry Studio 尚未合并此修复，使用官方版会导致图片显示为 base64 乱码，且多轮出图后会严重卡顿。  
+> v1.7.17-preview 基于上游 v1.7.17，修复了出图后内存膨胀和 UI 冻结的问题（[详情](https://github.com/CherryHQ/cherry-studio/pull/12766)）。
 
 ### Method 1: ComfyUI Manager (Recommended)
 
