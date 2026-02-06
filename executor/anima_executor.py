@@ -12,6 +12,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlencode, urljoin
 
 from .config import AnimaToolConfig
+from .history import HistoryManager
 
 
 def _round_up(x: int, base: int) -> int:
@@ -124,6 +125,9 @@ class AnimaExecutor:
         template_path = Path(__file__).resolve().parent / "workflow_template.json"
         with template_path.open("r", encoding="utf-8") as f:
             self._workflow_template: Dict[str, Any] = json.load(f)
+
+        # 生成历史管理器
+        self.history = HistoryManager()
 
     # -------------------------
     # Model listing / metadata
@@ -621,13 +625,30 @@ class AnimaExecutor:
             images_data.append(img_info)
 
         # 回显最终参数（便于调试）
+        actual_seed = int(prompt["19"]["inputs"]["seed"])
+        actual_width = int(prompt["28"]["inputs"]["width"])
+        actual_height = int(prompt["28"]["inputs"]["height"])
+
         result = {
             "success": True,
             "prompt_id": prompt_id,
             "positive": prompt["11"]["inputs"]["text"],
             "negative": prompt["12"]["inputs"]["text"],
-            "width": prompt["28"]["inputs"]["width"],
-            "height": prompt["28"]["inputs"]["height"],
+            "seed": actual_seed,
+            "width": actual_width,
+            "height": actual_height,
             "images": images_data,
         }
+
+        # 记录到历史
+        self.history.add(
+            params=prompt_json,
+            positive_text=result["positive"],
+            negative_text=result["negative"],
+            prompt_id=prompt_id,
+            seed=actual_seed,
+            width=actual_width,
+            height=actual_height,
+        )
+
         return result

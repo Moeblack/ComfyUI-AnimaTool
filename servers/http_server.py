@@ -16,7 +16,9 @@ _PARENT = Path(__file__).resolve().parent.parent
 if str(_PARENT) not in sys.path:
     sys.path.insert(0, str(_PARENT))
 
-from fastapi import FastAPI, HTTPException
+from copy import deepcopy
+
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
@@ -26,6 +28,11 @@ from executor import AnimaExecutor, AnimaToolConfig
 class GenerateRequest(BaseModel):
     # 允许任意字段（由 tool schema 约束；服务端只做最小校验）
     payload: Dict[str, Any] = Field(default_factory=dict)
+
+
+class RerollRequest(BaseModel):
+    source: str = Field(..., description="历史记录引用：'last' 或历史 ID")
+    overrides: Dict[str, Any] = Field(default_factory=dict, description="覆盖参数")
 
 
 def _read_text(path: Path) -> str:
@@ -64,14 +71,58 @@ def create_app() -> FastAPI:
             "prompt_examples": _read_text(knowledge_dir / "prompt_examples.md"),
         }
 
+    def _generate_with_repeat(payload: Dict[str, Any]) -> list[Dict[str, Any]]:
+        """执行生成（支持 repeat 多次独立 queue 提交），返回结果列表。"""
+        repeat = max(1, int(payload.pop("repeat", 1) or 1))
+        results = []
+        for _ in range(repeat):
+            run_params = deepcopy(payload)
+            if "seed" not in payload or payload.get("seed") is None:
+                run_params.pop("seed", None)
+            results.append(executor.generate(run_params))
+        return results
+
     @app.post("/generate")
     def generate(req: GenerateRequest) -> Dict[str, Any]:
         payload = req.payload or {}
         try:
-            result = executor.generate(payload)
+            results = _generate_with_repeat(payload)
+            # 单次兼容旧接口，多次返回数组
+            if len(results) == 1:
+                return results[0]
+            return {"success": True, "results": results}
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e)) from e
-        return result
+
+    @app.get("/history")
+    def history(limit: int = Query(default=5, ge=1, le=50)) -> Dict[str, Any]:
+        records = executor.history.list_recent(limit)
+        return {
+            "count": len(records),
+            "records": [r.to_dict() for r in records],
+        }
+
+    @app.post("/reroll")
+    def reroll(req: RerollRequest) -> Dict[str, Any]:
+        record = executor.history.get(req.source)
+        if record is None:
+            raise HTTPException(status_code=404, detail=f"未找到历史记录：{req.source}")
+
+        merged = deepcopy(record.params)
+        overrides = {k: v for k, v in (req.overrides or {}).items() if v is not None}
+        merged.update(overrides)
+
+        # seed 默认行为：未显式指定则自动随机
+        if "seed" not in req.overrides or req.overrides.get("seed") is None:
+            merged.pop("seed", None)
+
+        try:
+            results = _generate_with_repeat(merged)
+            if len(results) == 1:
+                return results[0]
+            return {"success": True, "results": results}
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e)) from e
 
     return app
 

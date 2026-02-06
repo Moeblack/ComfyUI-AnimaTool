@@ -94,6 +94,16 @@ TOOL_SCHEMA = {
         "cfg": {"type": "number", "description": "CFG", "default": 4.5},
         "sampler_name": {"type": "string", "description": "采样器", "default": "er_sde"},
         "seed": {"type": "integer", "description": "种子（不填则随机）"},
+        "repeat": {
+            "type": "integer",
+            "description": "提交几次独立生成任务（queue 模式，每次独立随机 seed）。默认 1。总生成张数 = repeat × batch_size",
+            "default": 1, "minimum": 1, "maximum": 16,
+        },
+        "batch_size": {
+            "type": "integer",
+            "description": "单次任务内生成几张（latent batch 模式，共享参数，更吃显存）。默认 1",
+            "default": 1, "minimum": 1, "maximum": 4,
+        },
         "loras": {
             "type": "array",
             "description": (
@@ -132,13 +142,47 @@ LIST_MODELS_SCHEMA = {
 }
 
 
+LIST_HISTORY_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "limit": {
+            "type": "integer",
+            "description": "返回最近几条历史记录（默认 5）",
+            "default": 5, "minimum": 1, "maximum": 50,
+        },
+    },
+}
+
+
+# reroll schema：source 必填 + generate 的所有可选参数可作为覆盖项
+_REROLL_OVERRIDE_PROPS = {
+    k: v for k, v in TOOL_SCHEMA["properties"].items()
+}
+REROLL_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "source": {
+            "type": "string",
+            "description": "要 reroll 的历史记录。'last' 表示最近一条，或使用历史 ID（如 '12' 或 '#12'）",
+        },
+        **_REROLL_OVERRIDE_PROPS,
+    },
+    "required": ["source"],
+}
+
+
 @server.list_tools()
 async def list_tools() -> list[Tool]:
     """列出可用工具"""
     return [
         Tool(
             name="generate_anima_image",
-            description="使用 Anima 模型生成二次元/插画图片。画师必须以 @ 开头（如 @fkey）。必须明确安全标签（safe/sensitive/nsfw/explicit）。支持并行调用：生成多张图时可同时发起多个请求，无需串行等待。",
+            description=(
+                "使用 Anima 模型生成二次元/插画图片。画师必须以 @ 开头（如 @fkey）。"
+                "必须明确安全标签（safe/sensitive/nsfw/explicit）。"
+                "支持 repeat 参数一次提交多个独立生成任务（默认方式），"
+                "也支持 batch_size 参数在单任务内生成多张。"
+            ),
             inputSchema=TOOL_SCHEMA,
         ),
         Tool(
@@ -149,39 +193,55 @@ async def list_tools() -> list[Tool]:
             ),
             inputSchema=LIST_MODELS_SCHEMA,
         ),
+        Tool(
+            name="list_anima_history",
+            description=(
+                "查看最近的图片生成历史记录。"
+                "返回每条记录的 ID、时间、画师、标签、种子等摘要信息。"
+                "用于在 reroll 之前确认要引用哪条历史。"
+            ),
+            inputSchema=LIST_HISTORY_SCHEMA,
+        ),
+        Tool(
+            name="reroll_anima_image",
+            description=(
+                "基于历史记录重新生成图片。引用一条历史记录作为基础参数，"
+                "可选覆盖部分参数（如换画师、加 LoRA 等）。"
+                "seed 默认自动随机（出不同画面），也可手动指定保持一致。"
+                "支持 repeat 参数一次提交多个独立任务。"
+            ),
+            inputSchema=REROLL_SCHEMA,
+        ),
     ]
 
 
-@server.call_tool()
-async def call_tool(name: str, arguments: Dict[str, Any]) -> Sequence[TextContent | ImageContent]:
-    """调用工具"""
-    try:
-        executor = get_executor()
+async def _generate_with_repeat(
+    executor: "AnimaExecutor",
+    prompt_json: Dict[str, Any],
+) -> list[TextContent | ImageContent]:
+    """执行生成（支持 repeat 多次独立 queue 提交），返回 MCP 内容列表。"""
+    from copy import deepcopy
 
-        if name == "list_anima_models":
-            model_type = str((arguments or {}).get("model_type") or "").strip()
-            if not model_type:
-                return [TextContent(type="text", text="参数错误：model_type 不能为空")]
+    repeat = max(1, int(prompt_json.pop("repeat", 1) or 1))
+    # batch_size 留在 prompt_json 中，由 executor._inject() 处理
 
-            result = await asyncio.to_thread(executor.list_models, model_type)
-            return [TextContent(type="text", text=json.dumps(result, ensure_ascii=False, indent=2))]
+    all_contents: list[TextContent | ImageContent] = []
 
-        if name != "generate_anima_image":
-            return [TextContent(type="text", text=f"未知工具: {name}")]
+    for i in range(repeat):
+        run_params = deepcopy(prompt_json)
+        # 每次 repeat 都使用新随机 seed（除非用户显式指定了 seed）
+        if "seed" not in prompt_json or prompt_json.get("seed") is None:
+            run_params.pop("seed", None)
 
-        # 在线程池中执行同步操作
-        result = await asyncio.to_thread(executor.generate, arguments)
+        result = await asyncio.to_thread(executor.generate, run_params)
 
         if not result.get("success"):
-            return [TextContent(type="text", text=f"生成失败: {result}")]
+            all_contents.append(TextContent(type="text", text=f"第 {i+1}/{repeat} 次生成失败: {result}"))
+            continue
 
-        # 构建返回内容
-        contents: list[TextContent | ImageContent] = []
-
-        # 添加图片（base64 格式，原生显示）
         for img in result.get("images", []):
             if img.get("base64") and img.get("mime_type"):
-                contents.append(
+                all_contents.append(
                     ImageContent(
                         type="image",
                         data=img["base64"],
@@ -189,11 +249,63 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> Sequence[TextConten
                     )
                 )
 
-        # 避免返回空内容导致客户端无显示
-        if not contents:
-            contents.append(TextContent(type="text", text="生成成功，但没有产出图片。"))
+    if not all_contents:
+        all_contents.append(TextContent(type="text", text="生成完成，但没有产出图片。"))
 
-        return contents
+    return all_contents
+
+
+@server.call_tool()
+async def call_tool(name: str, arguments: Dict[str, Any]) -> Sequence[TextContent | ImageContent]:
+    """调用工具"""
+    try:
+        executor = get_executor()
+        args = dict(arguments or {})
+
+        # ---- list_anima_models ----
+        if name == "list_anima_models":
+            model_type = str(args.get("model_type") or "").strip()
+            if not model_type:
+                return [TextContent(type="text", text="参数错误：model_type 不能为空")]
+            result = await asyncio.to_thread(executor.list_models, model_type)
+            return [TextContent(type="text", text=json.dumps(result, ensure_ascii=False, indent=2))]
+
+        # ---- list_anima_history ----
+        if name == "list_anima_history":
+            limit = int(args.get("limit") or 5)
+            records = executor.history.list_recent(limit)
+            if not records:
+                return [TextContent(type="text", text="暂无生成历史。")]
+            lines = [r.summary() for r in records]
+            return [TextContent(type="text", text="\n".join(lines))]
+
+        # ---- reroll_anima_image ----
+        if name == "reroll_anima_image":
+            source = str(args.pop("source", "")).strip()
+            if not source:
+                return [TextContent(type="text", text="参数错误：source 不能为空（使用 'last' 或历史 ID）")]
+
+            record = executor.history.get(source)
+            if record is None:
+                return [TextContent(type="text", text=f"未找到历史记录：{source}。请先使用 list_anima_history 查看可用记录。")]
+
+            # 深拷贝原始参数，用覆盖项更新
+            from copy import deepcopy
+            merged = deepcopy(record.params)
+            overrides = {k: v for k, v in args.items() if v is not None}
+            merged.update(overrides)
+
+            # seed 默认行为：未显式指定则自动随机（删掉原 seed）
+            if "seed" not in args or args.get("seed") is None:
+                merged.pop("seed", None)
+
+            return await _generate_with_repeat(executor, merged)
+
+        # ---- generate_anima_image ----
+        if name == "generate_anima_image":
+            return await _generate_with_repeat(executor, args)
+
+        return [TextContent(type="text", text=f"未知工具: {name}")]
 
     except Exception as e:
         return [TextContent(type="text", text=f"错误: {str(e)}")]
