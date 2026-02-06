@@ -76,14 +76,14 @@ TOOL_SCHEMA = {
         "appearance": {"type": "string", "description": "角色外观（发色、眼睛等）"},
         "artist": {
             "type": "string",
-            "description": "画师，必须以 @ 开头。支持多画师混合（如 '@fkey, @jima'）但稳定性下降，AI 自动生成时建议只用 1 位"
+            "description": "画师，必须以 @ 开头。支持多画师混合（如 '@fkey, @jima'），但稳定性下降，AI 自动生成时建议只用 1 位。画师名遵循特定格式：1. 名字中间无下划线（如 @kawakami rokkaku, 而非 @kawakami_rokkaku）；2. 以 @ 开头（如 @fkey）。如果画师名里本身有括号，如 @yd (orange maru), 则需要用转移符号转义括号，记作 @yd \\(orange maru\\), 以避免被解析器误认为是附加信息。"
         },
         "style": {"type": "string", "description": "画风"},
         "tags": {
             "type": "string",
             "description": "Danbooru 标签（逗号分隔）"
         },
-        "nltags": {"type": "string", "description": "自然语言补充（最多一句）"},
+        "nltags": {"type": "string", "description": "自然语言补充"},
         "environment": {"type": "string", "description": "环境/光影"},
         "neg": {
             "type": "string",
@@ -99,7 +99,7 @@ TOOL_SCHEMA = {
             "description": (
                 "可选：多 LoRA（仅 UNET）。会在 UNETLoader 与 KSampler 之间按顺序链式注入 LoraLoaderModelOnly。"
                 "重要：ComfyUI 会对 lora_name 做枚举校验，必须与 GET /models/loras 返回的字符串完全一致（含子目录分隔符）。"
-                "Windows 下通常使用反斜杠 `\\` 作为子目录分隔符；如果在 JSON 字符串里手写，需要写成 `\\\\` 才表示一个 `\\`。"
+                "可使用 list_anima_models(model_type=loras) 工具查询当前可用的 LoRA 模型列表，并确保使用的 LoRA 存在同名 .json sidecar 元数据文件（强制要求）。"
                 "另外：list_anima_models(model_type=loras) 只返回带同名 .json sidecar 元数据的 LoRA（强制要求）。"
             ),
             "items": {
@@ -178,13 +178,6 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> Sequence[TextConten
         # 构建返回内容
         contents: list[TextContent | ImageContent] = []
 
-        # 添加文本信息
-        info_text = f"""生成成功！
-- 分辨率: {result['width']} x {result['height']}
-- 正面提示词: {result['positive'][:100]}...
-- 图片数量: {len(result['images'])}"""
-        contents.append(TextContent(type="text", text=info_text))
-
         # 添加图片（base64 格式，原生显示）
         for img in result.get("images", []):
             if img.get("base64") and img.get("mime_type"):
@@ -195,6 +188,10 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> Sequence[TextConten
                         mimeType=img["mime_type"],
                     )
                 )
+
+        # 避免返回空内容导致客户端无显示
+        if not contents:
+            contents.append(TextContent(type="text", text="生成成功，但没有产出图片。"))
 
         return contents
 
