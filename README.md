@@ -36,6 +36,8 @@
 - **HTTP API**：随 ComfyUI 启动，无需额外服务
 - **结构化提示词**：按 Anima 规范自动拼接
 - **多长宽比支持**：21:9 到 9:21（共 14 种预设）
+- **Reroll / 历史记录**：支持基于历史记录重新生成，可覆盖部分参数（换画师、加 LoRA 等）
+- **批量生成**：`repeat` 参数提交多次独立任务（queue 模式），`batch_size` 在单任务内生成多张
 
 ---
 
@@ -210,7 +212,9 @@ pip install mcp
 | `/anima/health` | GET | 健康检查 |
 | `/anima/schema` | GET | Tool Schema |
 | `/anima/knowledge` | GET | 专家知识 |
-| `/anima/generate` | POST | 执行生成 |
+| `/anima/generate` | POST | 执行生成（支持 `repeat` 批量） |
+| `/anima/history` | GET | 查看最近生成历史 |
+| `/anima/reroll` | POST | 基于历史记录重新生成 |
 
 #### 调用示例
 
@@ -278,6 +282,8 @@ python -m servers.http_server
 | `cfg` | float | 4.5 | CFG |
 | `seed` | int | 随机 | 种子 |
 | `sampler_name` | string | `er_sde` | 采样器 |
+| `repeat` | int | 1 | 提交几次独立生成任务（queue 模式，每次独立随机 seed）。总张数 = repeat × batch_size |
+| `batch_size` | int | 1 | 单次任务内生成几张（latent batch 模式，更吃显存） |
 | `loras` | array | `[]` | 可选：追加 LoRA（仅 UNET）。`name` 为 `ComfyUI/models/loras/` 下的相对路径（可含子目录），示例：`[{"name":"_Anima/cosmic_kaguya_lokr_epoch4_comfyui.safetensors","weight":0.8}]` |
 
 ### Supported Aspect Ratios
@@ -369,6 +375,7 @@ ComfyUI-AnimaTool/
 ├── executor/             # 核心执行器
 │   ├── anima_executor.py
 │   ├── config.py
+│   ├── history.py        # 生成历史管理器（内存 + JSONL 持久化）
 │   └── workflow_template.json
 ├── knowledge/            # 专家知识库
 │   ├── anima_expert.md

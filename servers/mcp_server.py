@@ -226,6 +226,7 @@ async def _generate_with_repeat(
     # batch_size 留在 prompt_json 中，由 executor._inject() 处理
 
     all_contents: list[TextContent | ImageContent] = []
+    history_ids: list[int] = []
 
     for i in range(repeat):
         run_params = deepcopy(prompt_json)
@@ -239,6 +240,9 @@ async def _generate_with_repeat(
             all_contents.append(TextContent(type="text", text=f"第 {i+1}/{repeat} 次生成失败: {result}"))
             continue
 
+        if result.get("history_id"):
+            history_ids.append(result["history_id"])
+
         for img in result.get("images", []):
             if img.get("base64") and img.get("mime_type"):
                 all_contents.append(
@@ -251,6 +255,12 @@ async def _generate_with_repeat(
 
     if not all_contents:
         all_contents.append(TextContent(type="text", text="生成完成，但没有产出图片。"))
+
+    # 追加历史 ID 提示，让 AI 自然知道可以 reroll
+    if history_ids:
+        ids_str = ", ".join(f"#{hid}" for hid in history_ids)
+        hint = f"已保存为历史记录 {ids_str}。可用 reroll_anima_image(source=\"{history_ids[-1]}\") 或 reroll_anima_image(source=\"last\") 重新生成。"
+        all_contents.append(TextContent(type="text", text=hint))
 
     return all_contents
 

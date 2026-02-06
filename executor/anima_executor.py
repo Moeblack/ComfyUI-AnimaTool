@@ -641,7 +641,7 @@ class AnimaExecutor:
         }
 
         # 记录到历史
-        self.history.add(
+        record = self.history.add(
             params=prompt_json,
             positive_text=result["positive"],
             negative_text=result["negative"],
@@ -650,5 +650,6 @@ class AnimaExecutor:
             width=actual_width,
             height=actual_height,
         )
+        result["history_id"] = record.id
 
         return result

@@ -12,6 +12,8 @@ ComfyUI-AnimaTool 是一个让 AI Agent（Cursor / Claude / Gemini / OpenAI）�
 - **HTTP API**：随 ComfyUI 启动，无需额外服务
 - **结构化提示词**：按 Anima 规范自动拼接
 - **多长宽比支持**：21:9 到 9:21（共 14 种预设）
+- **Reroll / 历史记录**：基于历史记录重新生成，支持覆盖部分参数
+- **批量生成**：`repeat`（多次独立 queue）和 `batch_size`（单任务多张）
 
 ## 快速开始
 

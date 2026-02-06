@@ -156,7 +156,25 @@ ComfyUI 支持的所有采样器都可以使用。推荐：
 
 **A**: 
 
-目前每次调用生成 1 张图片。如需批量生成，可以多次调用或修改工作流模板。
+支持两种方式：
+
+1. **`repeat` 参数**（推荐）：提交多次独立生成任务（queue 模式），每次独立随机 seed，显存占用与单张相同。例如 `repeat: 3` 会提交 3 次独立生成。
+2. **`batch_size` 参数**：单次任务内生成多张（latent batch 模式），共享参数，速度更快但更吃显存。
+
+总张数 = `repeat` × `batch_size`。
+
+### Q: 如何重新生成上一张图？
+
+**A**: 
+
+使用 `reroll_anima_image` 工具：
+
+- **再 roll 一次**：`reroll_anima_image(source="last")`
+- **再来 3 张**：`reroll_anima_image(source="last", repeat=3)`
+- **换个画师**：`reroll_anima_image(source="last", artist="@ciloranko")`
+- **回溯历史**：先用 `list_anima_history` 查看记录，再用 `reroll_anima_image(source="12")` 指定 ID
+
+每次生成后会自动返回历史记录 ID，方便后续引用。
 
 ### Q: 可以自定义工作流吗？
 
