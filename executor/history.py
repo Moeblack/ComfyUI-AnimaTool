@@ -88,8 +88,13 @@ class HistoryManager:
             for r in all_records[-self._maxlen :]:
                 self._records.append(r)
 
-            if self._records:
-                self._next_id = max(r.id for r in self._records) + 1
+            # 扫描所有记录以确保 next_id 是全局最大的
+            max_id = 0
+            for r in all_records:
+                if r.id > max_id:
+                    max_id = r.id
+            
+            self._next_id = max_id + 1
         except Exception:
             pass  # 文件损坏时静默跳过
 
@@ -138,6 +143,7 @@ class HistoryManager:
         - "last"：最后一条
         - 数字 / "#数字"：按 ID 查找
         """
+        target_id = None
         with self._lock:
             if not self._records:
                 return None
@@ -155,7 +161,32 @@ class HistoryManager:
             for r in self._records:
                 if r.id == target_id:
                     return r
+
+        # 内存找不到，尝试回退到文件搜索 (在锁外进行，避免长时间持有锁)
+        if target_id is not None:
+            return self._search_in_file(target_id)
+            
+        return None
+
+    def _search_in_file(self, target_id: int) -> Optional[GenerationRecord]:
+        """在历史文件中搜索指定 ID 的记录"""
+        if not self._history_file.exists():
             return None
+        try:
+            lines = self._history_file.read_text(encoding="utf-8").strip().splitlines()
+            for line in reversed(lines):  # 从新到旧搜索
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    data = json.loads(line)
+                    if data.get("id") == target_id:
+                        return GenerationRecord.from_dict(data)
+                except Exception:
+                    continue
+        except Exception:
+            pass
+        return None
 
     def list_recent(self, limit: int = 5) -> List[GenerationRecord]:
         """返回最近 N 条记录（从新到旧）"""

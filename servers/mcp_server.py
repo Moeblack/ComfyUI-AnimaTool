@@ -54,59 +54,59 @@ TOOL_SCHEMA = {
     "properties": {
         "prompt_hint": {
             "type": "string",
-            "description": "可选：人类可读的简短需求摘要"
+            "description": "可选：人类可读的简短需求摘要，仅用于日志回显。"
         },
         "aspect_ratio": {
             "type": "string",
-            "description": "长宽比，如 '16:9'、'9:16'、'1:1'",
+            "description": "可选：长宽比，如 '16:9'、'9:16'、'1:1'。默认 1:1。",
             "enum": ["21:9", "2:1", "16:9", "16:10", "5:3", "3:2", "4:3", "1:1", "3:4", "2:3", "3:5", "10:16", "9:16", "1:2", "9:21"]
         },
-        "width": {"type": "integer", "description": "宽度（像素），必须是 16 的倍数如 512/768/1024，否则自动对齐。会覆盖 aspect_ratio"},
-        "height": {"type": "integer", "description": "高度（像素），必须是 16 的倍数如 512/768/1024，否则自动对齐。会覆盖 aspect_ratio"},
+        "width": {"type": "integer", "description": "可选：宽度（像素），须为16倍数。若指定则覆盖 aspect_ratio。"},
+        "height": {"type": "integer", "description": "可选：高度（像素），须为16倍数。若指定则覆盖 aspect_ratio。"},
         "quality_meta_year_safe": {
             "type": "string",
-            "description": "质量/年份/安全标签。必须包含 safe/sensitive/nsfw/explicit 之一"
+            "description": "必选：质量/年份/安全标签。必须包含 safe/sensitive/nsfw/explicit 之一。示例: 'masterpiece, best quality, year 2024, safe'"
         },
         "count": {
             "type": "string",
-            "description": "人数，如 '1girl'、'2girls'、'1boy'"
+            "description": "必选：人数标签，如 '1girl'、'2girls'、'1boy'。"
         },
-        "character": {"type": "string", "description": "角色名"},
-        "series": {"type": "string", "description": "作品名"},
-        "appearance": {"type": "string", "description": "角色外观（发色、眼睛等）"},
+        "character": {"type": "string", "description": "可选：角色名（可含作品名括号），如 'hatsune miku' 或 'yunli (honkai star rail)'。"},
+        "series": {"type": "string", "description": "可选：作品/系列名，如 'vocaloid'。"},
+        "appearance": {"type": "string", "description": "可选：角色固定外观描述（发色、眼睛、身材等，不含服装）。"},
         "artist": {
             "type": "string",
-            "description": "画师，必须以 @ 开头（如 @fkey）。多画师逗号分隔。"
+            "description": "必选：画师标签，必须以 @ 开头（如 @fkey）。多画师逗号分隔。若用户没指定画师，请根据风格推荐一位。"
         },
-        "style": {"type": "string", "description": "画风"},
+        "style": {"type": "string", "description": "可选：画风倾向或特定渲染风格。"},
         "tags": {
             "type": "string",
-            "description": "Danbooru 标签（逗号分隔）"
+            "description": "必选：核心 Danbooru 标签（逗号分隔）。建议包含动作、构图、服装、表情等。"
         },
-        "nltags": {"type": "string", "description": "自然语言补充"},
-        "environment": {"type": "string", "description": "环境/光影"},
+        "nltags": {"type": "string", "description": "可选：自然语言补充（仅在 tag 难以描述时使用）。"},
+        "environment": {"type": "string", "description": "可选：环境与背景光影描述。"},
         "neg": {
             "type": "string",
-            "description": "负面提示词",
-            "default": "worst quality, low quality, blurry, bad hands, bad anatomy, extra fingers, missing fingers, text, watermark"
+            "description": "必选：负面提示词。默认已包含通用反咒。建议加入与安全标签相反的约束。",
+            "default": "worst quality, low quality, score_1, score_2, score_3, blurry, bad hands, bad anatomy, text, watermark"
         },
-        "steps": {"type": "integer", "description": "步数", "default": 25},
-        "cfg": {"type": "number", "description": "CFG", "default": 4.5},
-        "sampler_name": {"type": "string", "description": "采样器", "default": "er_sde"},
-        "seed": {"type": "integer", "description": "种子（不填则随机）"},
+        "steps": {"type": "integer", "description": "可选：步数，默认 25。", "default": 25},
+        "cfg": {"type": "number", "description": "可选：CFG，默认 4.5。", "default": 4.5},
+        "sampler_name": {"type": "string", "description": "可选：采样器，默认 er_sde。", "default": "er_sde"},
+        "seed": {"type": "integer", "description": "可选：随机种子。不填则每次生成都随机。"},
         "repeat": {
             "type": "integer",
-            "description": "提交几次独立生成任务（queue 模式，每次独立随机 seed）。默认 1。总生成张数 = repeat × batch_size",
+            "description": "可选：独立任务重复次数。每次都会有不同随机种子。默认 1。",
             "default": 1, "minimum": 1, "maximum": 16,
         },
         "batch_size": {
             "type": "integer",
-            "description": "单次任务内生成几张（latent batch 模式，共享参数，更吃显存）。默认 1",
+            "description": "可选：单任务内的 batch size。默认 1。",
             "default": 1, "minimum": 1, "maximum": 4,
         },
         "loras": {
             "type": "array",
-            "description": "LoRA 数组（仅 UNET）。name 须匹配 list_anima_models(model_type=loras) 返回值。",
+            "description": "可选：LoRA 列表。name 须匹配 list_anima_models(model_type=loras) 返回值。",
             "items": {
                 "type": "object",
                 "properties": {
@@ -158,16 +158,26 @@ LIST_HISTORY_SCHEMA = {
 }
 
 
-# reroll schema：source 必填 + generate 的所有可选参数可作为覆盖项
-_REROLL_OVERRIDE_PROPS = {
-    k: v for k, v in TOOL_SCHEMA["properties"].items()
-}
+# reroll schema：source 必填 + generate 的所有参数可作为【可选覆盖项】
+# 关键：需要把原 generate 中"必选"的描述改为"可选覆盖"，否则 AI 会自动填入
+def _build_reroll_override_props() -> dict:
+    """复制 generate schema 的属性，但将描述中的'必选'改为'可选覆盖'。"""
+    import copy
+    props = copy.deepcopy(TOOL_SCHEMA["properties"])
+    for _k, _v in props.items():
+        desc = _v.get("description", "")
+        if desc.startswith("必选："):
+            _v["description"] = "可选覆盖（不提供则沿用历史记录）：" + desc[3:]
+    return props
+
+
+_REROLL_OVERRIDE_PROPS = _build_reroll_override_props()
 REROLL_SCHEMA = {
     "type": "object",
     "properties": {
         "source": {
             "type": "string",
-            "description": "要 reroll 的历史记录。'last' 表示最近一条，或使用历史 ID（如 '12' 或 '#12'）",
+            "description": "必选：要 reroll 的基础记录。'last' 表示最近一条，或使用历史 ID（如 '12'）。",
         },
         **_REROLL_OVERRIDE_PROPS,
     },
@@ -209,8 +219,8 @@ async def list_tools() -> list[Tool]:
         Tool(
             name="reroll_anima_image",
             description=(
-                "基于历史记录重新生成图片。引用一条历史记录作为基础参数，"
-                "可选覆盖部分参数（如换画师、加 LoRA 等）。"
+                "基于历史记录【覆盖】重新生成。source 以外的所有参数均为【可选覆盖项】。"
+                "如果不提供覆盖参数，则完全沿用历史记录（seed 默认除外）。"
                 "seed 默认自动随机（出不同画面），也可手动指定保持一致。"
                 "支持 repeat 参数一次提交多个独立任务。"
             ),
