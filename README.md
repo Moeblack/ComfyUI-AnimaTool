@@ -1,5 +1,13 @@
 # ComfyUI-AnimaTool
 
+> [!NOTE]
+> **今日更新**
+> - 🎰 **十连抽功能** — 支持 `repeat` / `batch_size`，一次出多张不是梦
+> - 🔄 **更换卡池功能** — 可以切换 UNET / CLIP / VAE 模型了，试试新卡池
+> - 📋 **寻访记录功能** — 查看历史生成记录，支持 reroll 重新抽卡
+>
+> 🚧 **正在开发** — 酒馆 MCP 客户端（SillyTavern），糖糖开发中
+
 > [!TIP]
 > **Cherry Studio 现已支持 MCP 图片显示！**  
 > 我们提交的 PR 已修复 Cherry Studio 对 MCP `ImageContent` 的处理。在官方合并之前，你可以使用预览版体验完整的 MCP 图片功能：  
