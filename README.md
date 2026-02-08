@@ -6,6 +6,7 @@
 > - 🔄 **更换卡池功能** — 可以切换 UNET / CLIP / VAE 模型了，试试新卡池
 > - 📋 **寻访记录功能** — 查看历史生成记录，支持 reroll 重新抽卡
 >
+> ✅ **云端/远程连接更简单** — 新增 `uvx` 免安装模式，一行配置连接远程 ComfyUI，无需本地环境
 > ✅ **酒馆 MCP 客户端已发布** — [SillyTavern MCP Client](https://github.com/Moeblack/sillytavern-mcp-client)，支持 stdio + Streamable HTTP 传输
 > 
 > ✅ **工具调用体验修复** — [Tool Use Fix](https://github.com/Moeblack/sillytavern-tooluse-fix)，合并碎片消息、图片直接显示、Swipe 代理
@@ -140,17 +141,23 @@ pip install -r ComfyUI-AnimaTool/requirements.txt
 
 ### 方式 0：独立 MCP（推荐：云端/远程 ComfyUI，或不想装到 custom_nodes）
 
-如果你只想连接一台正在运行的 ComfyUI（本机或云端），并且不想把本仓库放进 `ComfyUI/custom_nodes/`，可以使用独立 PyPI 包 **`comfyui-animatool`**（安装后使用命令 `animatool-mcp`）（仅通过 ComfyUI 标准 API：`/prompt`、`/history/<id>`、`/view?...` 工作）。
+如果你只想连接一台正在运行的 ComfyUI（本机或云端），并且不想把本仓库放进 `ComfyUI/custom_nodes/`，可以使用独立 PyPI 包 **[`comfyui-animatool`](https://github.com/Moeblack/animatool-mcp)**（安装后使用命令 `animatool-mcp`）（仅通过 ComfyUI 标准 API：`/prompt`、`/history/<id>`、`/view?...` 工作）。
 
 #### 安装
 
-发布到 PyPI 后：
+**方式一：使用 uvx (推荐，无需安装)**
+
+无需手动安装 Python 包，直接在 Cursor 配置中使用 `uvx` 运行（需安装 [uv](https://github.com/astral-sh/uv)）：
+
+*(配置见下方 JSON)*
+
+**方式二：使用 pip**
 
 ```bash
 pip install comfyui-animatool
 ```
 
-本仓库内开发/未发布时也可以：
+**方式三：源码安装 (开发用)**
 
 ```bash
 pip install -e ./animatool-mcp
@@ -158,15 +165,17 @@ pip install -e ./animatool-mcp
 
 #### 配置 Cursor
 
-在项目根目录创建 `.cursor/mcp.json`：
+在项目根目录创建 `.cursor/mcp.json`（以 `uvx` 为例）：
 
 ```json
 {
   "mcpServers": {
     "anima-tool": {
-      "command": "animatool-mcp",
+      "command": "uvx",
+      "args": ["--from", "comfyui-animatool", "animatool-mcp"],
       "env": {
-        "COMFYUI_URL": "http://127.0.0.1:8188"
+        "COMFYUI_URL": "http://127.0.0.1:8188",
+        "ANIMATOOL_CHECK_MODELS": "false"
       }
     }
   }

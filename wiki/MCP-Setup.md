@@ -11,16 +11,44 @@ MCP (Model Context Protocol) 是 Anthropic 提出的协议，允许 AI 工具返
 
 ## 配置步骤
 
-### 1. 安装依赖
+### 方式一：使用 uvx (推荐，无需安装依赖)
 
-```bash
-# 使用 ComfyUI 的 Python 环境
-pip install mcp
+直接在 Cursor 配置中使用 `uvx` 拉起最新版客户端（需安装 [uv](https://github.com/astral-sh/uv)）。此方式无需污染 ComfyUI 环境，且自动保持更新。
+
+在项目根目录创建/编辑 `.cursor/mcp.json`：
+
+```json
+{
+  "mcpServers": {
+    "animatool": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "comfyui-animatool",
+        "animatool-mcp"
+      ],
+      "env": {
+        "COMFYUI_URL": "http://127.0.0.1:8188",
+        "ANIMATOOL_CHECK_MODELS": "false"
+      }
+    }
+  }
+}
 ```
 
-### 2. 配置 Cursor
+> 说明：`ANIMATOOL_CHECK_MODELS` 设为 `false` 可跳过本地模型检查（适合远程连接 ComfyUI 的场景）。
 
-在项目根目录创建 `.cursor/mcp.json`：
+### 方式二：直接运行插件内置 Server (开发调试用)
+
+如果你需要修改 server 代码，或者不想安装 uv，可以直接运行插件目录下的脚本。
+
+1. **安装依赖**：
+   ```bash
+   # 在 ComfyUI 的 python 环境中
+   pip install mcp
+   ```
+
+2. **配置 Cursor**：
 
 ```json
 {
@@ -37,10 +65,7 @@ pip install mcp
 }
 ```
 
-> 说明：`COMFYUI_MODELS_DIR` 指向 **ComfyUI 的 models 根目录**（包含 loras/、checkpoints/ 等子目录）。
-> 该变量用于 `list_anima_models(model_type="loras")` 在本地磁盘上查找同名 `.json` sidecar 元数据文件。
-
-### 路径示例
+#### 路径示例 (方式二)
 
 **Windows**：
 
@@ -135,3 +160,67 @@ python /path/to/ComfyUI-AnimaTool/servers/mcp_server.py
 ```
 
 正常情况下不会有输出（MCP 使用 stdio 通信）。如果有错误会打印到 stderr。
+
+---
+
+## 其他客户端支持
+
+### Cherry Studio
+
+Cherry Studio v0.9.0+ 支持 MCP 协议。
+
+#### 方式一：使用 uvx (推荐)
+
+无需在 ComfyUI 环境安装依赖，直接运行：
+
+在 Cherry Studio 设置 -> MCP Servers -> 点击添加：
+
+- **Type**: `stdio`
+- **Command**: `uvx`
+- **Args** (注意：请分三行填写):
+    ```text
+    --from
+    comfyui-animatool
+    animatool-mcp
+    ```
+- **Environment Variables**:
+    - `COMFYUI_URL`: `http://127.0.0.1:8188`
+
+#### 方式二：本地运行 (使用 ComfyUI Python)
+
+- **Type**: `stdio`
+- **Command**: `<PATH_TO_PYTHON>` (ComfyUI 的 Python 解释器路径)
+- **Args**: `<PATH_TO>/ComfyUI-AnimaTool/servers/mcp_server.py` (填入绝对路径)
+- **Environment Variables**:
+    - `COMFYUI_URL`: `http://127.0.0.1:8188`
+
+### SillyTavern (酒馆)
+
+需安装 [SillyTavern MCP Client](https://github.com/Moeblack/sillytavern-mcp-client) 扩展。
+
+1. 打开 Extensions -> MCP Client -> Manage Servers
+2. 点击 **Add Server (JSON)**
+3. 填入以下配置（使用 uvx 示例）：
+
+```json
+{
+  "id": "animatool",
+  "name": "Anima Tool",
+  "transport": {
+    "type": "stdio",
+    "command": "uvx",
+    "args": [
+      "--from",
+      "comfyui-animatool",
+      "animatool-mcp"
+    ],
+    "env": {
+      "COMFYUI_URL": "http://127.0.0.1:8188"
+    }
+  },
+  "enabled": true,
+  "autoConnect": true
+}
+```
+
+> 注意：如需使用本地 Python 环境，请将 `command` 改为 python 路径，`args` 改为 `["/path/to/ComfyUI-AnimaTool/servers/mcp_server.py"]`。

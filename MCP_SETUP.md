@@ -155,3 +155,67 @@ python /path/to/ComfyUI/custom_nodes/ComfyUI-AnimaTool/servers/mcp_server.py
 ```json
 "env": { "ANIMATOOL_DOWNLOAD_IMAGES": "false" }
 ```
+
+---
+
+## 其他客户端支持
+
+### Cherry Studio
+
+Cherry Studio v0.9.0+ 支持 MCP 协议。
+
+#### 方式一：使用 uvx (推荐)
+
+无需在 ComfyUI 环境安装依赖，直接运行：
+
+在 Cherry Studio 设置 -> MCP Servers -> 点击添加：
+
+- **Type**: `stdio`
+- **Command**: `uvx`
+- **Args** (注意：请分三行填写):
+    ```text
+    --from
+    comfyui-animatool
+    animatool-mcp
+    ```
+- **Environment Variables**:
+    - `COMFYUI_URL`: `http://127.0.0.1:8188`
+
+#### 方式二：本地运行 (使用 ComfyUI Python)
+
+- **Type**: `stdio`
+- **Command**: `<PATH_TO_PYTHON>` (ComfyUI 的 Python 解释器路径)
+- **Args**: `<PATH_TO>/ComfyUI-AnimaTool/servers/mcp_server.py` (填入绝对路径)
+- **Environment Variables**:
+    - `COMFYUI_URL`: `http://127.0.0.1:8188`
+
+### SillyTavern (酒馆)
+
+需安装 [SillyTavern MCP Client](https://github.com/Moeblack/sillytavern-mcp-client) 扩展。
+
+1. 打开 Extensions -> MCP Client -> Manage Servers
+2. 点击 **Add Server (JSON)**
+3. 填入以下配置（使用 uvx 示例）：
+
+```json
+{
+  "id": "animatool",
+  "name": "Anima Tool",
+  "transport": {
+    "type": "stdio",
+    "command": "uvx",
+    "args": [
+      "--from",
+      "comfyui-animatool",
+      "animatool-mcp"
+    ],
+    "env": {
+      "COMFYUI_URL": "http://127.0.0.1:8188"
+    }
+  },
+  "enabled": true,
+  "autoConnect": true
+}
+```
+
+> 注意：如需使用本地 Python 环境，请将 `command` 改为 python 路径，`args` 改为 `["/path/to/ComfyUI-AnimaTool/servers/mcp_server.py"]`。
