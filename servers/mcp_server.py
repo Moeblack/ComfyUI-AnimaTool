@@ -336,6 +336,10 @@ async def _generate_with_repeat(
             history_ids.append(result["history_id"])
 
         for img in result.get("images", []):
+            saved_path = img.get("saved_path") or img.get("file_path")
+            if saved_path:
+                all_contents.append(TextContent(type="text", text=f"图片已保存到本地：{saved_path}"))
+
             if img.get("base64") and img.get("mime_type"):
                 all_contents.append(
                     ImageContent(
@@ -386,6 +390,10 @@ async def _generate_qwen_with_repeat(
         all_contents.append(TextContent(type="text", text=f"**Qwen 最终指令 ({result.get('width', 0)}x{result.get('height', 0)})**：\n> {instruction_sent}"))
 
         for img in result.get("images", []):
+            saved_path = img.get("saved_path") or img.get("file_path")
+            if saved_path:
+                all_contents.append(TextContent(type="text", text=f"图片已保存到本地：{saved_path}"))
+
             if img.get("base64") and img.get("mime_type"):
                 all_contents.append(
                     ImageContent(
