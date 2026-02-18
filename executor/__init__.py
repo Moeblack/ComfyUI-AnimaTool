@@ -5,6 +5,7 @@ from .config import (
     DEFAULT_CLIP_NAME,
     DEFAULT_VAE_NAME,
 )
+from .qwen_executor import QwenExecutor, build_qwen_instruction
 from .history import HistoryManager, GenerationRecord
 
 __all__ = [

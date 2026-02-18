@@ -32,6 +32,7 @@ from mcp.types import (
 )
 
 from executor import AnimaExecutor, AnimaToolConfig
+from executor import QwenExecutor
 
 
 # 创建 MCP Server
@@ -46,6 +47,69 @@ def get_executor() -> AnimaExecutor:
     if _executor is None:
         _executor = AnimaExecutor(config=AnimaToolConfig())
     return _executor
+
+_qwen_executor: QwenExecutor | None = None
+
+def get_qwen_executor() -> QwenExecutor:
+    global _qwen_executor
+    if _qwen_executor is None:
+        _qwen_executor = QwenExecutor(config=AnimaToolConfig())
+    return _qwen_executor
+
+QWEN_TOOL_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "edit_actions": {
+            "type": "array",
+            "description": "【修图必填】局部修改指令数组（如 ['把衬衫换成红色', '把脸替换为参考图']）。若为0参考文生图，必须留空！",
+            "items": {"type": "string"}
+        },
+        "character_and_action": {
+            "type": "string",
+            "description": "【生图必填】角色与主要动作的描述。局部修改时若不改动作请留空。"
+        },
+        "appearance_details": {
+            "type": "string",
+            "description": "【生图必填】角色的外貌与服装细节。如需固定身材特征（贫乳/娇小等），填入此处！局部修改时若不改外貌必须留空！"
+        },
+        "environment_and_lighting": {
+            "type": "string",
+            "description": "【生图必填】背景环境、光影描述。局部修改时若不改背景必须留空！"
+        },
+        "style_and_quality": {
+            "type": "string",
+            "description": "【全局选填】画质词、美颜滤镜或整体画风（如 '极致美颜，8k，电影级光影'）。推荐使用。"
+        },
+        "preserve_constraints": {
+            "type": "string",
+            "description": "【修图核心锁】强制防崩坏指令！例如：'保持人物脸部特征和周围背景完全不变'。修图时强烈建议填写。"
+        },
+        "render_text": {
+            "type": "string",
+            "description": "【选填】需要 Qwen 在画面中生成的精准文字（如 '阿里巴巴'）。不要自己加引号，后台会自动加。"
+        },
+        "base_image": {
+            "type": "string",
+            "description": "【选填】底图/原图的本地绝对或相对路径。传入后将切换为图生图(修图)模式，并自动映射为提示词中的 Picture 1。"
+        },
+        "reference_images": {
+            "type": "array",
+            "description": "【选填】参考图本地路径数组（最多2张）。传入后将自动依次映射为提示词中的 Picture 2, Picture 3。",
+            "items": {"type": "string"}
+        },
+        "aspect_ratio": {
+            "type": "string",
+            "description": "【选填】仅限文生图或需要扩图时使用（如 '16:9'）。有 base_image 时默认跟随原图比例。"
+        },
+        "seed": {"type": "integer"},
+        "repeat": {
+            "type": "integer",
+            "description": "可选：独立任务重复次数。每次都会有不同随机种子。默认 1。",
+            "default": 1, "minimum": 1, "maximum": 16,
+        },
+    },
+    "required": []
+}
 
 
 # Tool Schema（从 tool_schema_universal.json 简化）
@@ -226,6 +290,20 @@ async def list_tools() -> list[Tool]:
             ),
             inputSchema=REROLL_SCHEMA,
         ),
+        Tool(
+            name="generate_qwen_image",
+            description=(
+                "使用 QwenEdit 强大的自然语言和视觉理解引擎，支持“0参考文生图”以及“极致约束的多重图片编辑”。\n"
+                "**【视觉映射规则（极度重要）】**：\n"
+                "- 传入了 `base_image` 后，底层引擎会自动将其标记为图 1。在你的 `edit_actions` 文本中，**必须使用 'Picture 1' 来代指原图**。\n"
+                "- 传入了 `reference_images` 后，它们会被依次标记为图 2、图 3。文本中，**必须使用 'Picture 2' 或 'Picture 3' 来代指参考图**。\n"
+                "**【智能填表哲学】**：\n"
+                "- **纯生图**：填满 character, appearance, environment。edit_actions 留空。\n"
+                "- **局部修图**：把火力集中在 edit_actions 数组和 preserve_constraints 锁上。不需要改的外貌或环境坚决留空！\n"
+                "- **身材/特征锚定**：修图时如果不希望特定身材(如贫乳)被归一化，请填入 appearance_details 强制锚定。"
+            ),
+            inputSchema=QWEN_TOOL_SCHEMA,
+        ),
     ]
 
 
@@ -279,6 +357,54 @@ async def _generate_with_repeat(
     return all_contents
 
 
+async def _generate_qwen_with_repeat(
+    executor: "QwenExecutor",
+    prompt_json: Dict[str, Any],
+) -> list[TextContent | ImageContent]:
+    from copy import deepcopy
+
+    repeat = max(1, int(prompt_json.pop("repeat", 1) or 1))
+
+    all_contents: list[TextContent | ImageContent] = []
+    history_ids: list[int] = []
+
+    for i in range(repeat):
+        run_params = deepcopy(prompt_json)
+        if "seed" not in prompt_json or prompt_json.get("seed") is None:
+            run_params.pop("seed", None)
+
+        result = await asyncio.to_thread(executor.generate, run_params)
+
+        if not result.get("success"):
+            all_contents.append(TextContent(type="text", text=f"第 {i+1}/{repeat} 次 Qwen 生成失败: {result}"))
+            continue
+
+        if result.get("history_id"):
+            history_ids.append(result["history_id"])
+
+        instruction_sent = result.get("instruction_sent", "")
+        all_contents.append(TextContent(type="text", text=f"**Qwen 最终指令 ({result.get('width', 0)}x{result.get('height', 0)})**：\n> {instruction_sent}"))
+
+        for img in result.get("images", []):
+            if img.get("base64") and img.get("mime_type"):
+                all_contents.append(
+                    ImageContent(
+                        type="image",
+                        data=img["base64"],
+                        mimeType=img["mime_type"],
+                    )
+                )
+
+    if not all_contents:
+        all_contents.append(TextContent(type="text", text="生成完成，但没有产出图片。"))
+
+    if history_ids:
+        ids_str = ", ".join(f"#{hid}" for hid in history_ids)
+        hint = f"已保存为 Qwen 历史记录 {ids_str}。"
+        all_contents.append(TextContent(type="text", text=hint))
+
+    return all_contents
+
 @server.call_tool()
 async def call_tool(name: str, arguments: Dict[str, Any]) -> Sequence[TextContent | ImageContent]:
     """调用工具"""
@@ -296,6 +422,7 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> Sequence[TextConten
 
         # ---- list_anima_history ----
         if name == "list_anima_history":
+            executor = get_executor()
             limit = int(args.get("limit") or 5)
             records = executor.history.list_recent(limit)
             if not records:
@@ -305,6 +432,7 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> Sequence[TextConten
 
         # ---- reroll_anima_image ----
         if name == "reroll_anima_image":
+            executor = get_executor()
             source = str(args.pop("source", "")).strip()
             if not source:
                 return [TextContent(type="text", text="参数错误：source 不能为空（使用 'last' 或历史 ID）")]
@@ -327,7 +455,13 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> Sequence[TextConten
 
         # ---- generate_anima_image ----
         if name == "generate_anima_image":
+            executor = get_executor()
             return await _generate_with_repeat(executor, args)
+
+        # ---- generate_qwen_image ----
+        if name == "generate_qwen_image":
+            qwen_executor = get_qwen_executor()
+            return await _generate_qwen_with_repeat(qwen_executor, args)
 
         return [TextContent(type="text", text=f"未知工具: {name}")]
 
