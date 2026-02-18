@@ -25,9 +25,11 @@ pip install -r ComfyUI-AnimaTool/requirements.txt
 
 ## 模型文件
 
-确保以下模型文件已放置到 ComfyUI 对应目录：
+本插件支持双引擎，请**根据你想要使用的工具功能**下载对应的模型文件，并放置到 ComfyUI 的相应目录中：
 
-### 必需文件
+### 1. 使用传统 Anima 引擎 (`generate_anima_image`)
+
+主要用于二次元 Danbooru 标签生图。需要以下文件：
 
 | 文件 | 路径 | 说明 | 大小 |
 |------|------|------|------|
@@ -35,11 +37,23 @@ pip install -r ComfyUI-AnimaTool/requirements.txt
 | `qwen_3_06b_base.safetensors` | `models/text_encoders/` | Qwen3 CLIP | ~1.2GB |
 | `qwen_image_vae.safetensors` | `models/vae/` | VAE | ~330MB |
 
+### 2. 使用 QwenEdit 引擎 (`generate_qwen_image`)
+
+主要用于自然语言生图、精准文字生成、局部修图与换装。需要以下文件：
+
+| 文件 | 路径 | 说明 | 大小 |
+|------|------|------|------|
+| `Qwen-Rapid-AIO-NSFW-v23.safetensors` | `models/checkpoints/_Qwen/` | Qwen AIO | ~4GB |
+| `qwen_3_06b_base.safetensors` | `models/text_encoders/` | Qwen3 CLIP | ~1.2GB |
+| `qwen_image_vae.safetensors` | `models/vae/` | VAE | ~330MB |
+
+*(注：两个引擎共用同一个 CLIP 和 VAE 模型)*
+
 ### 下载方式
 
 **方式 1：Hugging Face**
 
-访问 [circlestone-labs/Anima](https://huggingface.co/circlestone-labs/Anima) 下载。
+访问 [circlestone-labs/Anima](https://huggingface.co/circlestone-labs/Anima) 下载 Anima 模型，或访问 Qwen 的模型仓库下载 AIO 模型。
 
 **方式 2：命令行**
 

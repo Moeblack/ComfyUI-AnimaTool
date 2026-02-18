@@ -33,10 +33,10 @@ Qwen-Image-Edit-Rapid-AIO 模型使用**简单直接的自然语言指令**作�
 ### 模式 B：局部修图 / 多重图片编辑 (有原图或参考图)
 - **适用场景**：对对话中上一轮生成的本地图片进行修改、换装、换背景、添加文字等。
 - **填表要求**：
-  - `base_image`: 【必填】填入本地原图的绝对路径（如前一轮 AI 提示的保存路径）。**传入后，原图将被底层引擎标记为 `Picture 1`。**
+  - `base_image`: 【必填】填入本地原图的**绝对路径**（如前一轮 AI 提示的保存路径）。⚠️ **由于 MCP 限制，必须提供完整的绝对路径（如 `C:\...\image.png`），不支持相对路径！另外独立 MCP 包暂不支持 QwenEdit 引擎，必须使用 custom_nodes 本地版。** 传入后，原图将被底层引擎标记为 `Picture 1`。
   - `edit_actions`: 【必填】局部修改指令数组。**必须使用 'Picture 1' 来代指原图！**（例：`["Change the shirt in Picture 1 to pink", "Remove the passerby in the background of Picture 1"]`）。
   - `preserve_constraints`: 【强烈建议填写】强制防崩坏指令！（例：`"Keep the face and background in Picture 1 completely unchanged"`）。
-  - `reference_images`: 【选填】如果你想把 `Picture 1` 的某处替换成另一张图的样子，填入参考图路径。**传入后，它们会依次变为 `Picture 2`、`Picture 3`。**（例指令：`["Change the face in Picture 1 to match the face in Picture 2"]`）。
+  - `reference_images`: 【选填】如果你想把 `Picture 1` 的某处替换成另一张图的样子，填入参考图**绝对路径**。**传入后，它们会依次变为 `Picture 2`、`Picture 3`。**（例指令：`["Change the face in Picture 1 to match the face in Picture 2"]`）。
   - `character_and_action`, `environment_and_lighting`: 如果不需要修改动作和背景，**必须留空**！
   - `appearance_details`: 仅在修图时如果你不希望特定身材(如贫乳)被归一化，请填入此处强制锚定原有特征。否则留空。
 

@@ -2,6 +2,8 @@
 
 本指南介绍如何为 Anima 模型编写高质量的提示词。
 
+> **注意**：本指南主要针对使用 `generate_anima_image` 的 Danbooru 标签体系。如果你使用的是 `generate_qwen_image`，请参考 [QwenEdit 指南](QwenEdit-Guide)（QwenEdit 使用自然语言而非标签词缀）。
+
 ## 硬性规则
 
 1. **画师必须带 `@` 前缀**：如 `@fkey, @jima`，否则几乎无效

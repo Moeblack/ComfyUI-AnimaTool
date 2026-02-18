@@ -19,10 +19,11 @@
 | `anima-preview.safetensors` | `ComfyUI/models/diffusion_models/` |
 | `qwen_3_06b_base.safetensors` | `ComfyUI/models/text_encoders/` |
 | `qwen_image_vae.safetensors` | `ComfyUI/models/vae/` |
+| `Qwen-Rapid-AIO-NSFW-v23.safetensors` | `ComfyUI/models/checkpoints/_Qwen/` |
 
 ### Q: 显存不够怎么办？
 
-**A**: Anima 模型需要约 6-8GB 显存。可以尝试：
+**A**: Anima 模型和 QwenEdit 都需要约 6-8GB 显存。可以尝试：
 
 1. 使用更小的分辨率
 2. 关闭其他占用显存的程序
@@ -107,6 +108,13 @@ bad hands, extra fingers, missing fingers, bad feet, extra limbs, bad anatomy
   ...
 }
 ```
+
+### Q: 如何使用 QwenEdit 模式修图/添加文字？
+
+**A**:
+
+- 必须使用新工具 `generate_qwen_image`，并使用纯自然语言或中文直接对话。
+- 详见 [QwenEdit 指南](QwenEdit-Guide)。
 
 ---
 

@@ -118,6 +118,35 @@ MCP Server 返回：
 
 ---
 
+### generate_qwen_image
+
+使用 QwenEdit 引擎生成/编辑图片，支持自然语言、0参考文生图、局部修图换装。
+
+#### 参数
+
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| `character_and_action` | string | 【生图必填】角色与主要动作的描述。局部修改时若不改动作请留空。 |
+| `appearance_details` | string | 【生图必填】角色的外貌与服装细节。修图时如需强制锚定特征填入此处，否则留空。 |
+| `environment_and_lighting`| string | 【生图必填】背景环境、光影描述。修图时若不改背景必须留空。 |
+| `style_and_quality` | string | 【全局选填】画质词或整体画风（如 '8k，电影级光影'）。 |
+| `edit_actions` | array | 【修图必填】局部修改指令数组。纯生图**必须留空**。 |
+| `preserve_constraints`| string | 【修图核心锁】强制防崩坏指令，如 '保持人物脸部特征和背景不变'。 |
+| `render_text` | string | 【选填】需要 Qwen 在画面中精准生成的文字。 |
+| `base_image` | string | 【选填】底图/原图的**本地绝对路径**（⚠️受MCP限制必须是绝对路径。独立 PyPI 包暂不支持 QwenEdit）。传入后切换为图生图模式（Picture 1）。 |
+| `reference_images` | array | 【选填】参考图**本地绝对路径**数组（最多2张）。依次映射为 Picture 2, Picture 3。 |
+| `aspect_ratio` | string | 【选填】生图/扩图长宽比（如 '16:9'）。有底图时默认跟随原图比例。 |
+| `seed` | integer | 【选填】随机种子。 |
+| `repeat` | integer | 【选填】独立任务重复次数，每次随机 seed。 |
+
+#### 返回
+
+MCP Server 返回：
+- `ImageContent`: 图片（原生显示）
+- `TextContent`: 保存路径与 Qwen 最终发送的指令。
+
+---
+
 ## ComfyUI HTTP API
 
 随 ComfyUI 启动自动注册以下路由。

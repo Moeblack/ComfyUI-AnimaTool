@@ -42,6 +42,13 @@
 - [📖 Wiki & Prompt Guide](https://github.com/Moeblack/ComfyUI-AnimaTool/wiki) - 详细的提示词指南、安装教程和 API 文档。
 - [🤖 Cursor Skill](CURSOR_SKILL.md) - **Cursor / Windsurf 用户必读**！将此文件内容作为 Agent Skill，让 AI 学会如何写高质量提示词。
 
+> **⚠️ 关于 QwenEdit 引擎的特别提醒**
+> 本工具现已接入 QwenEdit 模型，支持自然语言对话修图、换装及精准文字生成。请注意：
+> 1. **兼容性**：QwenEdit 引擎目前**仅在 Windows 环境下进行过测试**，其他操作系统可能存在未知的路径或环境问题。
+> 2. **路径严格要求**：由于 MCP 架构通信限制，使用 QwenEdit 修图时，传入给大模型的原图/参考图路径**必须是完整的本地绝对路径**（例如 `C:\Images\test.png`），不支持相对路径！
+> 3. **独立 MCP 包不支持**：目前的独立 PyPI 包版 MCP Server（即 `uvx comfyui-animatool`）暂不支持 QwenEdit 引擎。要使用 QwenEdit，请务必以 `custom_nodes` 方式安装本插件，并使用**本地源码版** `mcp_server.py`。
+> 详见 [QwenEdit 指南](https://github.com/Moeblack/ComfyUI-AnimaTool/wiki/QwenEdit-Guide)。
+
 ## Features
 
 - **MCP Server**：图片原生显示在 Cursor/Claude 聊天窗口
@@ -50,6 +57,7 @@
 - **多长宽比支持**：21:9 到 9:21（共 14 种预设）
 - **Reroll / 历史记录**：支持基于历史记录重新生成，可覆盖部分参数（换画师、加 LoRA 等）
 - **批量生成**：`repeat` 参数提交多次独立任务（queue 模式），`batch_size` 在单任务内生成多张
+- **双引擎支持**：内置传统 Anima 模型（Danbooru 标签）与全新的 QwenEdit 引擎（自然语言、精准文字生成、局部修图）
 
 ---
 
@@ -125,15 +133,25 @@ pip install -r ComfyUI-AnimaTool/requirements.txt
 
 ### Prerequisites
 
-确保以下模型文件已放置到 ComfyUI 对应目录：
+本插件支持双引擎，请**根据你想要使用的功能**下载对应的模型文件，并放置到 ComfyUI 相应目录：
 
-| 文件 | 路径 | 说明 |
-|------|------|------|
-| `anima-preview.safetensors` | `models/diffusion_models/` | Anima UNET |
-| `qwen_3_06b_base.safetensors` | `models/text_encoders/` | Qwen3 CLIP |
-| `qwen_image_vae.safetensors` | `models/vae/` | VAE |
+**1. 使用传统 Anima 引擎 (`generate_anima_image`)**
 
-模型下载：[circlestone-labs/Anima on Hugging Face](https://huggingface.co/circlestone-labs/Anima)
+| 文件 | 路径 | 说明 | 大小 |
+|------|------|------|------|
+| `anima-preview.safetensors` | `models/diffusion_models/` | Anima UNET | ~3.5GB |
+| `qwen_3_06b_base.safetensors` | `models/text_encoders/` | Qwen3 CLIP | ~1.2GB |
+| `qwen_image_vae.safetensors` | `models/vae/` | VAE | ~330MB |
+
+**2. 使用 QwenEdit 引擎 (`generate_qwen_image`)**
+
+| 文件 | 路径 | 说明 | 大小 |
+|------|------|------|------|
+| `Qwen-Rapid-AIO-NSFW-v23.safetensors` | `models/checkpoints/_Qwen/` | Qwen AIO | ~4GB |
+| `qwen_3_06b_base.safetensors` | `models/text_encoders/` | Qwen3 CLIP | ~1.2GB |
+| `qwen_image_vae.safetensors` | `models/vae/` | VAE | ~330MB |
+
+模型下载：[circlestone-labs/Anima](https://huggingface.co/circlestone-labs/Anima) (Anima) 或对应 Qwen 仓库。
 
 ---
 
@@ -190,6 +208,8 @@ pip install -e ./animatool-mcp
 - 或 `ANIMATOOL_HEADERS_JSON`（自定义 Header JSON 字符串）
 
 > 该方式**不依赖**安装本 custom node；只要 `COMFYUI_URL` 可访问即可。
+>
+> ⚠️ **关于 QwenEdit 引擎**：此 PyPI 独立包版本目前**暂未集成 QwenEdit 工具**。如果你需要使用自然语言修图和换装功能，请使用下方介绍的**方式 1：MCP Server（本地 custom_nodes 源码运行）**。
 
 ---
 

@@ -224,3 +224,15 @@ Cherry Studio v0.9.0+ 支持 MCP 协议。
 ```
 
 > 注意：如需使用本地 Python 环境，请将 `command` 改为 python 路径，`args` 改为 `["/path/to/ComfyUI-AnimaTool/servers/mcp_server.py"]`。
+
+---
+
+## 补充：导入 AI 技能库 (Skills)
+
+除了配置 MCP Server 提供工具接口外，**强烈建议**在你的 AI 客户端中导入本仓库提供的技能文档（位于 `skills/` 目录）：
+
+- `skills/how-to-use-animatool.md`
+- `skills/how-to-use-qwenedit.md`
+
+**为什么需要导入？**
+MCP 仅告诉 AI "有哪些参数可以调用"，而 Skill 文档则告诉 AI "**在什么场景下该怎么构思提示词、如何避免由于人类指令模糊导致的翻车**"。支持 Skill 或 Custom Instructions 的客户端（如 Cursor、Cline 等）可以直接配置或引用这些 `.md` 文件的内容。

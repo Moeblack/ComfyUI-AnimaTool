@@ -90,11 +90,11 @@ QWEN_TOOL_SCHEMA = {
         },
         "base_image": {
             "type": "string",
-            "description": "【选填】底图/原图的本地绝对或相对路径。传入后将切换为图生图(修图)模式，并自动映射为提示词中的 Picture 1。"
+            "description": "【选填】底图/原图的本地绝对路径。⚠️受 MCP 限制必须是绝对路径！传入后将切换为图生图(修图)模式，并自动映射为提示词中的 Picture 1。"
         },
         "reference_images": {
             "type": "array",
-            "description": "【选填】参考图本地路径数组（最多2张）。传入后将自动依次映射为提示词中的 Picture 2, Picture 3。",
+            "description": "【选填】参考图本地绝对路径数组（最多2张）。⚠️必须是绝对路径！传入后将自动依次映射为提示词中的 Picture 2, Picture 3。",
             "items": {"type": "string"}
         },
         "aspect_ratio": {

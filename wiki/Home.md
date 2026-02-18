@@ -14,14 +14,17 @@ ComfyUI-AnimaTool 是一个让 AI Agent（Cursor / Claude / Gemini / OpenAI）�
 - **多长宽比支持**：21:9 到 9:21（共 14 种预设）
 - **Reroll / 历史记录**：基于历史记录重新生成，支持覆盖部分参数
 - **批量生成**：`repeat`（多次独立 queue）和 `batch_size`（单任务多张）
+- **双引擎支持**：支持传统 Anima 模型（Danbooru 标签）与全新的 QwenEdit 引擎（自然语言、精准文字生成、局部修图）。
+- **AI 技能库 (Skills)**：内置 `.md` 技能库，支持支持 Skill 的 AI 客户端直接加载。
 
 ## 快速开始
 
 1. [安装指南](Installation)
 2. [MCP Server 配置](MCP-Setup)
 3. [提示词指南](Prompt-Guide)
-4. [API 参考](API-Reference)
-5. [常见问题](FAQ)
+4. [QwenEdit 指南](QwenEdit-Guide)
+5. [API 参考](API-Reference)
+6. [常见问题](FAQ)
 
 ## 使用的模型
 
@@ -31,6 +34,19 @@ ComfyUI-AnimaTool 是一个让 AI Agent（Cursor / Claude / Gemini / OpenAI）�
 - 使用 Qwen3 作为文本编码器
 - 支持 `@artist` 画师风格标签
 - 支持 Danbooru 标签系统
+
+**新增支持模型：[QwenEdit](https://huggingface.co/Qwen)**
+
+- 极简自然语言指令，无需复杂词缀。
+- 支持 **0参考文生图** 以及 **多参考局部修图/换装**。
+- 强大的 **精准中英文文字生成** 能力。
+
+## AI 技能库 (Skills)
+
+本仓库在 `skills/` 目录下内置了专为 AI Agent 编写的技能说明文档。如果你使用的 AI 聊天客户端（如 Cursor、Cline 等）支持导入 Skill / 规则库，可以直接导入这些文件，这将极大提升 AI 使用本工具的准确率：
+
+- `skills/how-to-use-animatool.md` - 指导 AI 如何根据 Danbooru 标签规范使用 `generate_anima_image`。
+- `skills/how-to-use-qwenedit.md` - 指导 AI 如何使用自然语言指令和视觉映射调用 `generate_qwen_image` 修图。
 
 ## 链接
 
