@@ -61,50 +61,50 @@ QWEN_TOOL_SCHEMA = {
     "properties": {
         "edit_actions": {
             "type": "array",
-            "description": "【修图必填】局部修改指令数组（如 ['把衬衫换成红色', '把脸替换为参考图']）。若为0参考文生图，必须留空！",
+            "description": "局部修改指令数组。文生图时留空",
             "items": {"type": "string"}
         },
         "character_and_action": {
             "type": "string",
-            "description": "【生图必填】角色与主要动作的描述。局部修改时若不改动作请留空。"
+            "description": "角色与动作描述"
         },
         "appearance_details": {
             "type": "string",
-            "description": "【生图必填】角色的外貌与服装细节。如需固定身材特征（贫乳/娇小等），填入此处！局部修改时若不改外貌必须留空！"
+            "description": "外貌与服装细节"
         },
         "environment_and_lighting": {
             "type": "string",
-            "description": "【生图必填】背景环境、光影描述。局部修改时若不改背景必须留空！"
+            "description": "背景环境与光影"
         },
         "style_and_quality": {
             "type": "string",
-            "description": "【全局选填】画质词、美颜滤镜或整体画风（如 '极致美颜，8k，电影级光影'）。推荐使用。"
+            "description": "画质词与画风"
         },
         "preserve_constraints": {
             "type": "string",
-            "description": "【修图核心锁】强制防崩坏指令！例如：'保持人物脸部特征和周围背景完全不变'。修图时强烈建议填写。"
+            "description": "防崩坏约束，修图时建议填写"
         },
         "render_text": {
             "type": "string",
-            "description": "【选填】需要 Qwen 在画面中生成的精准文字（如 '阿里巴巴'）。不要自己加引号，后台会自动加。"
+            "description": "画面中生成的文字"
         },
         "base_image": {
             "type": "string",
-            "description": "【选填】底图/原图的本地绝对路径。⚠️受 MCP 限制必须是绝对路径！传入后将切换为图生图(修图)模式，并自动映射为提示词中的 Picture 1。"
+            "description": "底图绝对路径，传入后切换为图生图模式，映射为 Picture 1"
         },
         "reference_images": {
             "type": "array",
-            "description": "【选填】参考图本地绝对路径数组（最多2张）。⚠️必须是绝对路径！传入后将自动依次映射为提示词中的 Picture 2, Picture 3。",
+            "description": "参考图绝对路径数组（最多2张），映射为 Picture 2/3",
             "items": {"type": "string"}
         },
         "aspect_ratio": {
             "type": "string",
-            "description": "【选填】仅限文生图或需要扩图时使用（如 '16:9'）。有 base_image 时默认跟随原图比例。"
+            "description": "仅文生图或扩图时使用，有 base_image 时跟随原图"
         },
         "seed": {"type": "integer"},
         "repeat": {
             "type": "integer",
-            "description": "可选：独立任务重复次数。每次都会有不同随机种子。默认 1。",
+            "description": "重复生成次数，默认 1",
             "default": 1, "minimum": 1, "maximum": 16,
         },
     },
@@ -118,63 +118,63 @@ TOOL_SCHEMA = {
     "properties": {
         "prompt_hint": {
             "type": "string",
-            "description": "可选：人类可读的简短需求摘要，仅用于日志回显。"
+            "description": "日志回显用摘要"
         },
         "aspect_ratio": {
             "type": "string",
-            "description": "可选：长宽比，如 '16:9'、'9:16'、'1:1'。默认 1:1。",
+            "description": "长宽比，默认 1:1",
             "enum": ["21:9", "2:1", "16:9", "16:10", "5:3", "3:2", "4:3", "1:1", "3:4", "2:3", "3:5", "10:16", "9:16", "1:2", "9:21"]
         },
-        "width": {"type": "integer", "description": "可选：宽度（像素），须为16倍数。若指定则覆盖 aspect_ratio。"},
-        "height": {"type": "integer", "description": "可选：高度（像素），须为16倍数。若指定则覆盖 aspect_ratio。"},
+        "width": {"type": "integer", "description": "宽度，须为16倍数"},
+        "height": {"type": "integer", "description": "高度，须为16倍数"},
         "quality_meta_year_safe": {
             "type": "string",
-            "description": "必选：质量/年份/安全标签。必须包含 safe/sensitive/nsfw/explicit 之一。示例: 'masterpiece, best quality, year 2025, safe'"
+            "description": "质量/年份/安全标签，须含 safe/sensitive/nsfw/explicit 之一"
         },
         "count": {
             "type": "string",
-            "description": "必选：人数标签，如 '1girl'、'2girls'、'1boy'。"
+            "description": "人数标签，如 '1girl'"
         },
-        "character": {"type": "string", "description": "可选：角色名（可含作品名括号），如 'hatsune miku' 或 'yunli (honkai star rail)'。"},
-        "series": {"type": "string", "description": "可选：作品/系列名，如 'vocaloid'。"},
-        "appearance": {"type": "string", "description": "可选：角色固定外观描述（发色、眼睛、身材等，不含服装）。"},
+        "character": {"type": "string", "description": "角色名"},
+        "series": {"type": "string", "description": "作品/系列名"},
+        "appearance": {"type": "string", "description": "角色外观描述"},
         "artist": {
             "type": "string",
-            "description": "必选：画师标签，必须以 @ 开头（如 @fkey）。多画师逗号分隔。若用户没指定画师，请根据风格推荐一位。"
+            "description": "画师标签，@ 开头，如 @fkey。多画师逗号分隔"
         },
-        "style": {"type": "string", "description": "可选：画风倾向或特定渲染风格。"},
+        "style": {"type": "string", "description": "画风倾向"},
         "tags": {
             "type": "string",
-            "description": "必选：核心 Danbooru 标签（逗号分隔）。建议包含动作、构图、服装、表情等。"
+            "description": "Danbooru 标签，逗号分隔"
         },
-        "nltags": {"type": "string", "description": "可选：自然语言补充（仅在 tag 难以描述时使用）。"},
-        "environment": {"type": "string", "description": "可选：环境与背景光影描述。"},
+        "nltags": {"type": "string", "description": "自然语言补充"},
+        "environment": {"type": "string", "description": "环境与背景光影描述"},
         "neg": {
             "type": "string",
-            "description": "必选：负面提示词。默认已包含通用反咒。建议加入与安全标签相反的约束。",
+            "description": "负面提示词",
             "default": "worst quality, low quality, score_1, score_2, score_3, blurry, bad hands, bad anatomy, text, watermark"
         },
-        "steps": {"type": "integer", "description": "可选：步数，默认 25。", "default": 25},
-        "cfg": {"type": "number", "description": "可选：CFG，默认 4.5。", "default": 4.5},
-        "sampler_name": {"type": "string", "description": "可选：采样器，默认 er_sde。", "default": "er_sde"},
-        "seed": {"type": "integer", "description": "可选：随机种子。不填则每次生成都随机。"},
+        "steps": {"type": "integer", "description": "步数，默认 25", "default": 25},
+        "cfg": {"type": "number", "description": "CFG，默认 4.5", "default": 4.5},
+        "sampler_name": {"type": "string", "description": "采样器，默认 er_sde", "default": "er_sde"},
+        "seed": {"type": "integer", "description": "随机种子"},
         "repeat": {
             "type": "integer",
-            "description": "可选：独立任务重复次数。每次都会有不同随机种子。默认 1。",
+            "description": "独立重复次数，默认 1",
             "default": 1, "minimum": 1, "maximum": 16,
         },
         "batch_size": {
             "type": "integer",
-            "description": "可选：单任务内的 batch size。默认 1。",
+            "description": "单任务 batch size，默认 1",
             "default": 1, "minimum": 1, "maximum": 4,
         },
         "loras": {
             "type": "array",
-            "description": "可选：LoRA 列表。name 须匹配 list_anima_models(model_type=loras) 返回值。",
+            "description": "LoRA 列表",
             "items": {
                 "type": "object",
                 "properties": {
-                    "name": {"type": "string", "description": "LoRA 文件名（含子目录）"},
+                    "name": {"type": "string", "description": "LoRA 文件名"},
                     "weight": {"type": "number", "default": 1.0}
                 },
                 "required": ["name"]
@@ -182,15 +182,15 @@ TOOL_SCHEMA = {
         },
         "unet_name": {
             "type": "string",
-            "description": "高级：UNET 模型文件名，默认 Anima。用 list_anima_models(model_type=diffusion_models) 查询可用模型。",
+            "description": "UNET 模型文件名，默认 Anima",
         },
         "clip_name": {
             "type": "string",
-            "description": "高级：文本编码器文件名，默认 Qwen3。用 list_anima_models(model_type=text_encoders) 查询。",
+            "description": "文本编码器文件名，默认 Qwen3",
         },
         "vae_name": {
             "type": "string",
-            "description": "高级：VAE 文件名，默认 Anima VAE。用 list_anima_models(model_type=vae) 查询。",
+            "description": "VAE 文件名，默认 Anima VAE",
         },
     },
     "required": ["quality_meta_year_safe", "count", "artist", "tags", "neg"]
@@ -203,7 +203,7 @@ LIST_MODELS_SCHEMA = {
         "model_type": {
             "type": "string",
             "enum": ["loras", "diffusion_models", "vae", "text_encoders"],
-            "description": "模型类型。loras 仅返回有 .json sidecar 元数据的 LoRA。",
+            "description": "模型类型。loras 仅返回有 .json sidecar 的",
         }
     },
     "required": ["model_type"],
@@ -215,7 +215,7 @@ LIST_HISTORY_SCHEMA = {
     "properties": {
         "limit": {
             "type": "integer",
-            "description": "返回最近几条历史记录（默认 5）",
+            "description": "返回最近记录数，默认 5",
             "default": 5, "minimum": 1, "maximum": 50,
         },
     },
@@ -230,8 +230,8 @@ def _build_reroll_override_props() -> dict:
     props = copy.deepcopy(TOOL_SCHEMA["properties"])
     for _k, _v in props.items():
         desc = _v.get("description", "")
-        if desc.startswith("必选："):
-            _v["description"] = "可选覆盖（不提供则沿用历史记录）：" + desc[3:]
+        if "必选：" in desc:
+            _v["description"] = desc.replace("必选：", "可选覆盖：")
     return props
 
 
@@ -241,7 +241,7 @@ REROLL_SCHEMA = {
     "properties": {
         "source": {
             "type": "string",
-            "description": "必选：要 reroll 的基础记录。'last' 表示最近一条，或使用历史 ID（如 '12'）。",
+            "description": "基础记录。'last' 或历史 ID",
         },
         **_REROLL_OVERRIDE_PROPS,
     },
@@ -255,53 +255,27 @@ async def list_tools() -> list[Tool]:
     return [
         Tool(
             name="generate_anima_image",
-            description=(
-                "使用 Anima 模型生成二次元/插画图片。画师必须以 @ 开头（如 @fkey）。"
-                "必须明确安全标签（safe/sensitive/nsfw/explicit）。"
-                "支持 repeat 参数一次提交多个独立生成任务（默认方式），"
-                "也支持 batch_size 参数在单任务内生成多张。"
-            ),
+            description="Anima 二次元图片生成。画师 @ 开头，须含安全标签。支持 repeat/batch_size 多张生成。",
             inputSchema=TOOL_SCHEMA,
         ),
         Tool(
             name="list_anima_models",
-            description=(
-                "查询 ComfyUI 当前可用的模型文件列表（loras/diffusion_models/vae/text_encoders）。"
-                "注意：当 model_type=loras 时，强制只返回存在同名 .json sidecar 元数据文件的 LoRA。"
-            ),
+            description="查询可用模型文件（loras/diffusion_models/vae/text_encoders）。loras 仅返回有 .json sidecar 的。",
             inputSchema=LIST_MODELS_SCHEMA,
         ),
         Tool(
             name="list_anima_history",
-            description=(
-                "查看最近的图片生成历史记录。"
-                "返回每条记录的 ID、时间、画师、标签、种子等摘要信息。"
-                "用于在 reroll 之前确认要引用哪条历史。"
-            ),
+            description="查看最近生成历史，返回 ID/时间/画师/标签/种子摘要。",
             inputSchema=LIST_HISTORY_SCHEMA,
         ),
         Tool(
             name="reroll_anima_image",
-            description=(
-                "基于历史记录【覆盖】重新生成。source 以外的所有参数均为【可选覆盖项】。"
-                "如果不提供覆盖参数，则完全沿用历史记录（seed 默认除外）。"
-                "seed 默认自动随机（出不同画面），也可手动指定保持一致。"
-                "支持 repeat 参数一次提交多个独立任务。"
-            ),
+            description="基于历史记录覆盖重生成。source 外均为可选覆盖项，seed 默认随机。",
             inputSchema=REROLL_SCHEMA,
         ),
         Tool(
             name="generate_qwen_image",
-            description=(
-                "使用 QwenEdit 强大的自然语言和视觉理解引擎，支持“0参考文生图”以及“极致约束的多重图片编辑”。\n"
-                "**【视觉映射规则（极度重要）】**：\n"
-                "- 传入了 `base_image` 后，底层引擎会自动将其标记为图 1。在你的 `edit_actions` 文本中，**必须使用 'Picture 1' 来代指原图**。\n"
-                "- 传入了 `reference_images` 后，它们会被依次标记为图 2、图 3。文本中，**必须使用 'Picture 2' 或 'Picture 3' 来代指参考图**。\n"
-                "**【智能填表哲学】**：\n"
-                "- **纯生图**：填满 character, appearance, environment。edit_actions 留空。\n"
-                "- **局部修图**：把火力集中在 edit_actions 数组和 preserve_constraints 锁上。不需要改的外貌或环境坚决留空！\n"
-                "- **身材/特征锚定**：修图时如果不希望特定身材(如贫乳)被归一化，请填入 appearance_details 强制锚定。"
-            ),
+            description="QwenEdit 自然语言图片生成/编辑。base_image 映射 Picture 1，reference_images 映射 Picture 2/3。纯生图填 character/appearance/environment；局部修图用 edit_actions + preserve_constraints。",
             inputSchema=QWEN_TOOL_SCHEMA,
         ),
     ]
