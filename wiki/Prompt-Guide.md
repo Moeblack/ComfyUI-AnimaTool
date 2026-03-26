@@ -22,7 +22,7 @@
 
 | 字段 | 说明 | 示例 |
 |------|------|------|
-| `quality_meta_year_safe` | 质量、年份、安全标签 | `masterpiece, best quality, newest, year 2024, safe` |
+| `quality_meta_year_safe` | 质量、年份、安全标签 | `masterpiece, best quality, newest, year 2025, safe` |
 | `count` | 人数 | `1girl`, `2girls`, `1boy`, `no humans` |
 | `character` | 角色名 | `hatsune miku`, `serena (pokemon)` |
 | `series` | 作品名 | `vocaloid`, `pokemon` |
@@ -38,7 +38,7 @@
 ### 正面（推荐组合）
 
 ```
-masterpiece, best quality, highres, newest, year 2024
+masterpiece, best quality, highres, newest, year 2025
 ```
 
 ### 负面（基础模板）
@@ -94,7 +94,7 @@ worst quality, low quality, score_1, score_2, score_3, blurry, jpeg artifacts, b
 ```json
 {
   "aspect_ratio": "3:4",
-  "quality_meta_year_safe": "masterpiece, best quality, newest, year 2024, safe",
+  "quality_meta_year_safe": "masterpiece, best quality, newest, year 2025, safe",
   "count": "1girl",
   "artist": "@fkey, @jima",
   "tags": "upper body, smile, white dress",
@@ -107,7 +107,7 @@ worst quality, low quality, score_1, score_2, score_3, blurry, jpeg artifacts, b
 ```json
 {
   "aspect_ratio": "9:16",
-  "quality_meta_year_safe": "masterpiece, best quality, highres, newest, year 2024, safe",
+  "quality_meta_year_safe": "masterpiece, best quality, highres, newest, year 2025, safe",
   "count": "1girl",
   "character": "hatsune miku",
   "series": "vocaloid",
@@ -125,7 +125,7 @@ worst quality, low quality, score_1, score_2, score_3, blurry, jpeg artifacts, b
 ```json
 {
   "aspect_ratio": "16:9",
-  "quality_meta_year_safe": "masterpiece, best quality, newest, year 2024, safe",
+  "quality_meta_year_safe": "masterpiece, best quality, newest, year 2025, safe",
   "count": "no humans",
   "artist": "@fkey",
   "style": "anime background, scenic",
@@ -162,7 +162,7 @@ Invoke-RestMethod -Uri "http://127.0.0.1:8188/models/loras"
 ```json
 {
   "aspect_ratio": "3:4",
-  "quality_meta_year_safe": "masterpiece, best quality, newest, year 2024, safe",
+  "quality_meta_year_safe": "masterpiece, best quality, newest, year 2025, safe",
   "count": "1girl",
   "artist": "@fkey",
   "tags": "full body, fantasy outfit, glowing",
@@ -226,7 +226,7 @@ anthro, furry
 {
   "repeat": 3,
   "aspect_ratio": "3:4",
-  "quality_meta_year_safe": "masterpiece, best quality, newest, year 2024, safe",
+  "quality_meta_year_safe": "masterpiece, best quality, newest, year 2025, safe",
   "count": "1girl",
   "artist": "@fkey",
   "tags": "upper body, smile",

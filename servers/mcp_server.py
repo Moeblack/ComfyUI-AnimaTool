@@ -129,7 +129,7 @@ TOOL_SCHEMA = {
         "height": {"type": "integer", "description": "可选：高度（像素），须为16倍数。若指定则覆盖 aspect_ratio。"},
         "quality_meta_year_safe": {
             "type": "string",
-            "description": "必选：质量/年份/安全标签。必须包含 safe/sensitive/nsfw/explicit 之一。示例: 'masterpiece, best quality, year 2024, safe'"
+            "description": "必选：质量/年份/安全标签。必须包含 safe/sensitive/nsfw/explicit 之一。示例: 'masterpiece, best quality, year 2025, safe'"
         },
         "count": {
             "type": "string",

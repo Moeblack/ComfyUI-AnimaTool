@@ -7,7 +7,7 @@
 ```json
 {
   "aspect_ratio": "9:16",
-  "quality_meta_year_safe": "masterpiece, best quality, highres, newest, year 2024, safe",
+  "quality_meta_year_safe": "masterpiece, best quality, highres, newest, year 2025, safe",
   "count": "1girl",
   "character": "hatsune miku",
   "series": "vocaloid",
@@ -25,7 +25,7 @@
 ```json
 {
   "aspect_ratio": "16:10",
-  "quality_meta_year_safe": "best quality, highres, newest, year 2024, safe",
+  "quality_meta_year_safe": "best quality, highres, newest, year 2025, safe",
   "count": "1girl",
   "character": "",
   "series": "",
@@ -43,7 +43,7 @@
 ```json
 {
   "aspect_ratio": "21:9",
-  "quality_meta_year_safe": "good quality, highres, newest, year 2024, safe",
+  "quality_meta_year_safe": "good quality, highres, newest, year 2025, safe",
   "count": "1girl",
   "character": "",
   "series": "",

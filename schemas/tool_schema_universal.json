@@ -99,7 +99,7 @@
       },
       "quality_meta_year_safe": {
         "type": "string",
-        "description": "质量/元数据/年份/安全标签。必须明确 safe/sensitive/nsfw/explicit 之一。示例：'masterpiece, best quality, highres, newest, year 2024, safe'"
+        "description": "质量/元数据/年份/安全标签。必须明确 safe/sensitive/nsfw/explicit 之一。示例：'masterpiece, best quality, highres, newest, year 2025, safe'"
       },
       "count": {
         "type": "string",

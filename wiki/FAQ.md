@@ -82,7 +82,7 @@
 
 **A**: 
 
-1. 使用推荐的质量标签：`masterpiece, best quality, highres, newest, year 2024`
+1. 使用推荐的质量标签：`masterpiece, best quality, highres, newest, year 2025`
 2. 负面词要详细：`worst quality, low quality, blurry, bad anatomy, bad hands...`
 3. 使用推荐的画师组合：`@fkey, @jima`
 

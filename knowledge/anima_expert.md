@@ -63,7 +63,7 @@
 {
   "width": 1152,
   "height": 896,
-  "quality_meta_year_safe": "masterpiece, best quality, highres, newest, year 2024, safe",
+  "quality_meta_year_safe": "masterpiece, best quality, highres, newest, year 2025, safe",
   "count": "1girl",
   "character": "yunli (honkai star rail)",
   "series": "honkai star rail",

@@ -202,7 +202,7 @@ MCP Server 返回：
 ```json
 {
   "aspect_ratio": "3:4",
-  "quality_meta_year_safe": "masterpiece, best quality, newest, year 2024, safe",
+  "quality_meta_year_safe": "masterpiece, best quality, newest, year 2025, safe",
   "count": "1girl",
   "artist": "@fkey, @jima",
   "tags": "upper body, smile, white dress",
@@ -332,7 +332,7 @@ python -m servers.cli --help
 ```bash
 python -m servers.cli \
   --aspect-ratio "3:4" \
-  --quality "masterpiece, best quality, newest, year 2024, safe" \
+  --quality "masterpiece, best quality, newest, year 2025, safe" \
   --count "1girl" \
   --artist "@fkey, @jima" \
   --tags "upper body, smile, white dress" \

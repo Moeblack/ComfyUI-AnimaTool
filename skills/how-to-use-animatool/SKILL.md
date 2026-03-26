@@ -54,7 +54,7 @@ description: "这是一个展示 AnimaTool使用方法的Tool。启用此 Skill 
 ## 5. 工具调用参数（严格分离字段）
 
 - `aspect_ratio`: 长宽比，推荐使用（如 "3:4"）。
-- `quality_meta_year_safe`: 质量/安全标签（例："masterpiece, best quality, newest, year 2024, safe"）。
+- `quality_meta_year_safe`: 质量/安全标签（例："masterpiece, best quality, newest, year 2025, safe"）。
 - `count`: 人数（1girl, 2girls, 1boy, no humans）。
 - `character`: 【只放角色名】如 "serena \(pokemon\)"。不要放作品名！
 - `series`: 【只放作品名】如 "pokemon \(game\)"。不要放角色名！

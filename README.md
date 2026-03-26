@@ -281,7 +281,7 @@ pip install mcp
 ```powershell
 $body = @{
     aspect_ratio = "3:4"
-    quality_meta_year_safe = "masterpiece, best quality, newest, year 2024, safe"
+    quality_meta_year_safe = "masterpiece, best quality, newest, year 2025, safe"
     count = "1girl"
     artist = "@fkey, @jima"
     tags = "upper body, smile, white dress"
@@ -296,7 +296,7 @@ Invoke-RestMethod -Uri "http://127.0.0.1:8188/anima/generate" -Method Post -Body
 ```bash
 curl -X POST http://127.0.0.1:8188/anima/generate \
   -H "Content-Type: application/json" \
-  -d '{"aspect_ratio":"3:4","quality_meta_year_safe":"masterpiece, best quality, newest, year 2024, safe","count":"1girl","artist":"@fkey, @jima","tags":"upper body, smile, white dress","neg":"worst quality, low quality, blurry, bad hands, nsfw"}'
+  -d '{"aspect_ratio":"3:4","quality_meta_year_safe":"masterpiece, best quality, newest, year 2025, safe","count":"1girl","artist":"@fkey, @jima","tags":"upper body, smile, white dress","neg":"worst quality, low quality, blurry, bad hands, nsfw"}'
 ```
 
 ---
@@ -379,7 +379,7 @@ python -m servers.http_server
 ```json
 {
   "aspect_ratio": "3:4",
-  "quality_meta_year_safe": "newest, year 2024, safe",
+  "quality_meta_year_safe": "newest, year 2025, safe",
   "count": "1girl",
   "character": "kaguya",
   "series": "cosmic princess kaguya",

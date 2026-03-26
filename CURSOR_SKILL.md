@@ -62,7 +62,7 @@
 
 | 参数 | 说明 | 示例 |
 |------|------|------|
-| `quality_meta_year_safe` | 质量/年份/安全 | `"masterpiece, best quality, newest, year 2024, safe"` |
+| `quality_meta_year_safe` | 质量/年份/安全 | `"masterpiece, best quality, newest, year 2025, safe"` |
 | `count` | 人数 | `"1girl"`, `"2girls"`, `"1boy"` |
 | `artist` | 画师（带@） | `"@fkey, @jima"` |
 | `tags` | 核心标签 | `"upper body, smile, white dress"` |
@@ -96,7 +96,7 @@
 ```json
 {
   "aspect_ratio": "3:4",
-  "quality_meta_year_safe": "masterpiece, best quality, newest, year 2024, safe",
+  "quality_meta_year_safe": "masterpiece, best quality, newest, year 2025, safe",
   "count": "1girl",
   "artist": "@fkey, @jima",
   "tags": "upper body, smile, white dress, garden, flowers, sunlight",
