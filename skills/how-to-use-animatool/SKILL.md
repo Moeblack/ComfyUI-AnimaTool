@@ -90,3 +90,16 @@ description: "这是一个展示 AnimaTool使用方法的Tool。启用此 Skill 
 
 - 所有括号需要转义符号：必须使用 `\(` 和 `\)` （例如：艺术家标签`@yd \(orange maru\)`、角色标签`yu xuan \(yewang19\)` 是正确的）。
 - 禁止直接使用的符号：`(`、`)`、`_`（仅在Score_9 等标签中允许）。
+
+## 8. 参考文件
+
+本 Skill 的 `references/` 目录下有以下参考文件，可按需读取：
+
+- **`references/artist-list.md`** — 画师列表。**此文件允许 AI 直接修改**：当用户发现了好用的新画师、或希望记录个人偏好时，AI 可以通过命令行追加内容。例如：
+  ```bash
+  # 追加一个新画师到列表末尾
+  echo "- \`@新画师名\`" >> references/artist-list.md
+  ```
+  也可以用 `write_file` / `apply_diff` 等工具直接编辑该文件。此文件随使用不断积累，是用户个人的画师收藏库。
+
+- **`references/prompt-examples.md`** — 提示词 JSON 示例，供参考不同构图和比例的写法。
