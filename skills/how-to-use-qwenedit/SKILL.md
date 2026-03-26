@@ -37,7 +37,7 @@ Qwen-Image-Edit-Rapid-AIO 模型使用**简单直接的自然语言指令**作�
   - `edit_actions`: 【必填】局部修改指令数组。**必须使用 'Picture 1' 来代指原图！**（例：`["Change the shirt in Picture 1 to pink", "Remove the passerby in the background of Picture 1"]`）。
   - `preserve_constraints`: 【强烈建议填写】强制防崩坏指令！（例：`"Keep the face and background in Picture 1 completely unchanged"`）。
   - `reference_images`: 【选填】如果你想把 `Picture 1` 的某处替换成另一张图的样子，填入参考图**绝对路径**。**传入后，它们会依次变为 `Picture 2`、`Picture 3`。**（例指令：`["Change the face in Picture 1 to match the face in Picture 2"]`）。
-  - `character_and_action`, `environment_and_lighting`: 如果不需要修改动作和背景，**必须留空**！
+  - `character_and_action`, `environment_and_lighting`: 如果不需要修改动作 and 背景，**必须留空**！
   - `appearance_details`: 仅在修图时如果你不希望特定身材(如贫乳)被归一化，请填入此处强制锚定原有特征。否则留空。
 
 ---
@@ -56,7 +56,7 @@ Qwen-Image-Edit-Rapid-AIO 模型使用**简单直接的自然语言指令**作�
 | 功能场景 | 关键动词 (Action Verbs) | 提示词模板示例 (需放入 `edit_actions` 数组中) |
 | :--- | :--- | :--- |
 | **物体替换** | **Change / Swap / Replace** | `Change the dog in Picture 1 into a cat` (把图1的狗换成猫) |
-| **物体添加** | **Add / Insert** | `Add a pair of glasses on the man's face in Picture 1` (在图1男人脸上加副眼镜) |
+| **物体添加** | **Add / Insert** | `Add a pair of glasses on the man's face in Picture 1` (在图1男���脸上加副眼镜) |
 | **物体移除** | **Remove / Delete** | `Remove the passerby in the background of Picture 1` (移除图1背景中的路人) |
 | **属性修改** | **Make / Turn** | `Make the sky in Picture 1 blue and sunny` (让图1天空变蓝放晴) |
 | **细节修复** | **Fix / Refine** | `Fix the fingers in Picture 1 to make them look natural` (修复图1手指使其自然) |

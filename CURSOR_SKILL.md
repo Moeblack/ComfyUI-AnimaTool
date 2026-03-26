@@ -124,3 +124,23 @@
   - `anima-preview.safetensors`
   - `qwen_3_06b_base.safetensors`
   - `qwen_image_vae.safetensors`
+
+
+## Skill 文件结构
+
+本项目遵循 Agent Skills 标准（agentskills.io），Skill 文件位于 `skills/` 目录下：
+
+```
+skills/
+  how-to-use-animatool/
+    SKILL.md              # AnimaTool 使用指南
+    references/
+      artist-list.md      # 画师列表（按需加载）
+      prompt-examples.md  # 提示词 JSON 示例（按需加载）
+  how-to-use-qwenedit/
+    SKILL.md              # QwenEdit 使用指南
+    references/
+      qwen-expert.md      # QwenEdit 高级技巧（按需加载）
+```
+
+AI 在需要使用 AnimaTool 或 QwenEdit 时，会先加载对应的 SKILL.md 获取完整指南，再按需读取 references/ 下的参考文件。
