@@ -38,6 +38,7 @@ description: "这是一个展示 AnimaTool使用方法的Tool。启用此 Skill 
 - Tag dropout 存在：不必塞满所有标签，但关键标签必须有。
 - 数据结束时间为 2025.12。
 - 一共只有 1M 像素可用，所以要保证构图中主要部分可用像素占比高，保证主要部分不模糊。
+- **慎用 `full body`**：1MP 分辨率下全身构图会导致人物占画面比例很小，面部和手脚细节严重不足，极易崩坏。优先使用 `upper body` / `cowboy shot` / `portrait`；如果用户确实要求全身，建议搭配竖屏比例（如 `2:3` / `9:16`）以尽量拉大人物纵向占比，并在负面词中加强手脚反咒。
 - 画师名（artist）能用时，`style` 字段留空。
 - `style` 只在需要锁"品类/媒介"时才写（如 `league of legends splash art` / `watercolor` / `pixel art`）。不要同时写互斥的风格词。
 - `tags/environment` 里也不要塞会改变整体风格的词（如 chibi / lineart / flat shading），除非你就是要那个效果。
